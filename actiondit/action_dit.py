@@ -43,7 +43,6 @@ class TimestepEmbedder(nn.Module):
 
     def forward(self,t):
         emb=TimestepEmbedder.timestep_embedding(t,dim=self.time_dim)
-        print("timestep embedding shape: ",emb.shape)
         emb=self.mlp(emb)
         return emb
 
@@ -89,14 +88,20 @@ class LanguageEmbedder(nn.Module):
 
 
 class FinalLayer(nn.Module):
-    def __init__(self,hidden_dim,action_dim):
+    def __init__(self,hidden_dim,out_dim):
         super().__init__()
         self.norm=nn.LayerNorm(hidden_dim)
         self.mlp=nn.Sequential(
             nn.SiLU(),
             nn.Linear(hidden_dim, hidden_dim*2, bias=True)
         )
-        self.linear=nn.Linear(in_features=hidden_dim,out_features=action_dim,bias=True)
+        self.linear=nn.Linear(in_features=hidden_dim,out_features=out_dim,bias=True)
+
+        nn.init.constant_(self.mlp[-1].weight,0)
+        nn.init.constant_(self.mlp[-1].bias,0)
+        nn.init.constant_(self.linear.weight,0)
+        nn.init.constant_(self.linear.bias,0) 
+        
     def forward(self,x,c):
         shift, scale = self.mlp(c).chunk(2, dim=1)
         x = modulate(self.norm(x), shift=shift, scale=scale)
@@ -129,10 +134,15 @@ class ActionDiTBlock(nn.Module):
         return x
 
 class ActionDiT(nn.Module):
-    def __init__(self,action_dim,time_dim,state_dim,hidden_dim,depth=6,dino_dim=384,qwen_dim=1024):
+    def __init__(self,action_dim,time_dim,state_dim,hidden_dim,depth=6,dino_dim=384,qwen_dim=1024,action_chunk=16,learn_sigma=True):
         super().__init__()
 
+        self.out_dim=2*action_dim if learn_sigma else action_dim
+        self.action_chunk=action_chunk
+
         self.x_embedder=ActionEmbedder(action_dim,hidden_dim)
+        self.action_pos_embeddings=nn.Parameter(torch.zeros(1,action_chunk,hidden_dim))
+        nn.init.normal_(self.action_pos_embeddings,mean=0.0,std=0.02)
         self.t_embedder=TimestepEmbedder(time_dim,hidden_dim)
         self.s_embedder=StateEmbedder(state_dim,hidden_dim)
         self.o_embedder=ObservationEmbedder(dino_dim,hidden_dim)
@@ -142,32 +152,25 @@ class ActionDiT(nn.Module):
             ActionDiTBlock(hidden_dim=hidden_dim,mlp_hidden_dim=hidden_dim*4,num_heads=8,hidden_size=hidden_dim)
             for _ in range(depth)
         ])
-        self.final_layer=FinalLayer(hidden_dim,action_dim)
+        self.final_layer=FinalLayer(hidden_dim,self.out_dim)
 
     def forward(
             self,
-            predicted_actions,#动作[B,H,A]
+            noisy_actions,#动作[B,H,A]
             timesteps,#时间步[B]
             state_embeddings,#状态[B,S]
             observation_embeddings=None,#图像[B,3,224,224]
             language_embeddings=None):#语言List[B]
-        # print("before")
-        # print("action ",predicted_actions.shape)
-        # print("time ",timesteps.shape)
-        # print("state ",state_embeddings.shape)
-        # print("observation ",observation_embeddings.shape)
-        predicted_actions=self.x_embedder(predicted_actions)#[B,H,A]->[B,H,D]
+        assert noisy_actions.shape[1]==self.action_chunk
+        noisy_actions=self.x_embedder(noisy_actions)#[B,H,A]->[B,H,D]
+        noisy_actions=noisy_actions+self.action_pos_embeddings#[B,H,D]+[1,H,D]->[B,H,D]
         timesteps=self.t_embedder(timesteps)#[B]->[B,D]
         state_embeddings=self.s_embedder(state_embeddings)#[B,S]->[B,D]
         observation_embeddings=self.o_embedder(observation_embeddings)#[B,3,224,224]->[B,384]->[B,D]
         language_embeddings=self.l_embedder(language_embeddings)#List[B]->[B,1024]->[B,D]
-        # print("after")
-        # print("action ",predicted_actions.shape)
-        # print("time ",timesteps.shape)
-        # print("state ",state_embeddings.shape)
-        # print("observation ",observation_embeddings.shape)
         condition=timesteps+state_embeddings+observation_embeddings+language_embeddings
+
         for block in self.blocks:
-            predicted_actions=block(predicted_actions,condition)
-        predicted_actions=self.final_layer(predicted_actions,condition)
-        return predicted_actions
+            noisy_actions=block(noisy_actions,condition)
+        output=self.final_layer(noisy_actions,condition)
+        return output

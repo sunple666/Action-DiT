@@ -10,7 +10,7 @@ import numpy as np
 import torch as th
 import enum
 
-from .diffusion_utils import discretized_gaussian_log_likelihood, normal_kl
+from .diffusion_utils import continuous_gaussian_log_likelihood, normal_kl
 
 
 def mean_flat(tensor):
@@ -274,7 +274,8 @@ class GaussianDiffusion:
         if model_kwargs is None:
             model_kwargs = {}
 
-        B, C = x.shape[:2]
+        B=x.shape[0]
+        action_dim=x.shape[-1]
         assert t.shape == (B,)
         model_output = model(x, t, **model_kwargs)
         if isinstance(model_output, tuple):
@@ -283,8 +284,8 @@ class GaussianDiffusion:
             extra = None
 
         if self.model_var_type in [ModelVarType.LEARNED, ModelVarType.LEARNED_RANGE]:
-            assert model_output.shape == (B, C * 2, *x.shape[2:])
-            model_output, model_var_values = th.split(model_output, C, dim=1)
+            assert model_output.shape == (B, x.shape[1], 2*action_dim)
+            model_output, model_var_values = th.split(model_output, action_dim, dim=-1)
             min_log = _extract_into_tensor(self.posterior_log_variance_clipped, t, x.shape)
             max_log = _extract_into_tensor(np.log(self.betas), t, x.shape)
             # The model_var_values is [-1, 1] for [min_var, max_var].
@@ -701,7 +702,7 @@ class GaussianDiffusion:
         )
         kl = mean_flat(kl) / np.log(2.0)
 
-        decoder_nll = -discretized_gaussian_log_likelihood(
+        decoder_nll = -continuous_gaussian_log_likelihood(
             x_start, means=out["mean"], log_scales=0.5 * out["log_variance"]
         )
         assert decoder_nll.shape == x_start.shape
@@ -716,7 +717,7 @@ class GaussianDiffusion:
         """
         Compute training losses for a single timestep.
         :param model: the model to evaluate loss on.
-        :param x_start: the [N x C x ...] tensor of inputs.
+        :param x_start: the [N,H,A] tensor of inputs.
         :param t: a batch of timestep indices.
         :param model_kwargs: if not None, a dict of extra keyword arguments to
             pass to the model. This can be used for conditioning.
@@ -750,12 +751,13 @@ class GaussianDiffusion:
                 ModelVarType.LEARNED,
                 ModelVarType.LEARNED_RANGE,
             ]:
-                B, C = x_t.shape[:2]
-                assert model_output.shape == (B, C * 2, *x_t.shape[2:])
-                model_output, model_var_values = th.split(model_output, C, dim=1)
+                B=x_t.shape[0]
+                action_dim=x_t.shape[-1]
+                assert model_output.shape == (B, x_t.shape[1], 2*action_dim)
+                model_output, model_var_values = th.split(model_output, action_dim, dim=-1)
                 # Learn the variance using the variational bound, but don't let
                 # it affect our mean prediction.
-                frozen_out = th.cat([model_output.detach(), model_var_values], dim=1)
+                frozen_out = th.cat([model_output.detach(), model_var_values], dim=-1)
                 terms["vb"] = self._vb_terms_bpd(
                     model=lambda *args, r=frozen_out: r,
                     x_start=x_start,

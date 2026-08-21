@@ -44,6 +44,7 @@ def approx_standard_normal_cdf(x):
     return 0.5 * (1.0 + th.tanh(np.sqrt(2.0 / np.pi) * (x + 0.044715 * th.pow(x, 3))))
 
 
+# 这里原函数有误，f(x) = f(z) * dz/dx，原代码少了dz/dx
 def continuous_gaussian_log_likelihood(x, *, means, log_scales):
     """
     Compute the log-likelihood of a continuous Gaussian distribution.
@@ -56,7 +57,8 @@ def continuous_gaussian_log_likelihood(x, *, means, log_scales):
     inv_stdv = th.exp(-log_scales)
     normalized_x = centered_x * inv_stdv
     log_probs = th.distributions.Normal(th.zeros_like(x), th.ones_like(x)).log_prob(normalized_x)
-    return log_probs
+    jacobian=th.log(inv_stdv)
+    return log_probs+jacobian
 
 
 def discretized_gaussian_log_likelihood(x, *, means, log_scales):
