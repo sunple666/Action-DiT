@@ -13,11 +13,15 @@ import enum
 from .diffusion_utils import continuous_gaussian_log_likelihood, normal_kl
 
 
-def mean_flat(tensor):
+def mean_flat(tensor,mask=None):
     """
     Take the mean over all non-batch dimensions.
     """
-    return tensor.mean(dim=list(range(1, len(tensor.shape))))
+    if mask is None:
+        return tensor.mean(dim=list(range(1, len(tensor.shape))))
+    else:
+        mask=mask.unsqueeze(-1)
+        return (tensor*mask).sum(dim=list(range(1,len(tensor.shape))))/(mask.sum(dim=list(range(1,len(tensor.shape))))+1e-8)/tensor.shape[-1]
 
 
 class ModelMeanType(enum.Enum):
@@ -681,7 +685,7 @@ class GaussianDiffusion:
                 img = out["sample"]
 
     def _vb_terms_bpd(
-            self, model, x_start, x_t, t, clip_denoised=True, model_kwargs=None
+            self, model, x_start, x_t, t, clip_denoised=True, model_kwargs=None,loss_mask=None
     ):
         """
         Get a term for the variational lower-bound.
@@ -700,20 +704,20 @@ class GaussianDiffusion:
         kl = normal_kl(
             true_mean, true_log_variance_clipped, out["mean"], out["log_variance"]
         )
-        kl = mean_flat(kl) / np.log(2.0)
+        kl = mean_flat(kl,mask=loss_mask) / np.log(2.0)
 
         decoder_nll = -continuous_gaussian_log_likelihood(
             x_start, means=out["mean"], log_scales=0.5 * out["log_variance"]
         )
         assert decoder_nll.shape == x_start.shape
-        decoder_nll = mean_flat(decoder_nll) / np.log(2.0)
+        decoder_nll = mean_flat(decoder_nll,mask=loss_mask) / np.log(2.0)
 
         # At the first timestep return the decoder NLL,
         # otherwise return KL(q(x_{t-1}|x_t,x_0) || p(x_{t-1}|x_t))
         output = th.where((t == 0), decoder_nll, kl)
         return {"output": output, "pred_xstart": out["pred_xstart"]}
 
-    def training_losses(self, model, x_start, t, model_kwargs=None, noise=None):
+    def training_losses(self, model, x_start, t, model_kwargs=None, noise=None,loss_mask=None):
         """
         Compute training losses for a single timestep.
         :param model: the model to evaluate loss on.
@@ -741,6 +745,7 @@ class GaussianDiffusion:
                 t=t,
                 clip_denoised=False,
                 model_kwargs=model_kwargs,
+                loss_mask=loss_mask
             )["output"]
             if self.loss_type == LossType.RESCALED_KL:
                 terms["loss"] *= self.num_timesteps
@@ -764,6 +769,7 @@ class GaussianDiffusion:
                     x_t=x_t,
                     t=t,
                     clip_denoised=False,
+                    loss_mask=loss_mask
                 )["output"]
                 if self.loss_type == LossType.RESCALED_MSE:
                     # Divide by 1000 for equivalence with initial implementation.
@@ -778,7 +784,7 @@ class GaussianDiffusion:
                 ModelMeanType.EPSILON: noise,
             }[self.model_mean_type]
             assert model_output.shape == target.shape == x_start.shape
-            terms["mse"] = mean_flat((target - model_output) ** 2)
+            terms["mse"] = mean_flat((target - model_output) ** 2,mask=loss_mask)
             if "vb" in terms:
                 terms["loss"] = terms["mse"] + terms["vb"]
             else:

@@ -126,14 +126,21 @@ class ActionDiTBlock(nn.Module):
         nn.init.constant_(self.condition_mlp[-1].bias,0)
         nn.init.constant_(self.condition_mlp[-1].weight,0)
 
-    def forward(self,x,c):
+    def forward(self,x,c,mask=None):
+        key_padding_mask=~mask if mask is not None else None
         attn_gate,mlp_gate,attn_scale,attn_shift,mlp_scale,mlp_shift=self.condition_mlp(c).chunk(6,dim=-1)
         attn_input=modulate(self.norm1(x),scale=attn_scale,shift=attn_shift)
-        h=x+attn_gate.unsqueeze(1)*self.attn(attn_input,attn_input,attn_input)[0]
+        h=x+attn_gate.unsqueeze(1)*self.attn(attn_input,attn_input,attn_input,key_padding_mask=key_padding_mask,need_weights=False)[0]
         x=h+mlp_gate.unsqueeze(1)*self.mlp(modulate(self.norm2(h),scale=mlp_scale,shift=mlp_shift))
         return x
 
 class ActionDiT(nn.Module):
+    # 需要的参数如下：
+    # 动作[B,H,A]
+    # 时间步[B]
+    # 状态[B,S]
+    # 图像[B,3,224,224]
+    # 指令List[B]
     def __init__(self,action_dim,time_dim,state_dim,hidden_dim,depth=6,dino_dim=384,qwen_dim=1024,action_chunk=16,learn_sigma=True):
         super().__init__()
 
@@ -154,23 +161,28 @@ class ActionDiT(nn.Module):
         ])
         self.final_layer=FinalLayer(hidden_dim,self.out_dim)
 
+    #状态、图像、语言在扩散中不会改变，可以一次计算完毕
+    def encode_condition(self,states,observations,language):
+        state_embeddings=self.s_embedder(states)#[B,S]->[B,D]
+        observation_embeddings=self.o_embedder(observations)#[B,3,224,224]->[B,384]->[B,D]
+        language_embeddings=self.l_embedder(language)#List[B]->[B,1024]->[B,D]
+        condition=state_embeddings+observation_embeddings+language_embeddings
+        return condition
+
     def forward(
             self,
-            noisy_actions,#动作[B,H,A]
+            noisy_actions,#动作[B,H,A]         
             timesteps,#时间步[B]
-            state_embeddings,#状态[B,S]
-            observation_embeddings=None,#图像[B,3,224,224]
-            language_embeddings=None):#语言List[B]
+            condition,#条件[B,D]
+            action_mask=None):#动作掩码[B,H]
         assert noisy_actions.shape[1]==self.action_chunk
-        noisy_actions=self.x_embedder(noisy_actions)#[B,H,A]->[B,H,D]
-        noisy_actions=noisy_actions+self.action_pos_embeddings#[B,H,D]+[1,H,D]->[B,H,D]
+        x=self.x_embedder(noisy_actions)#[B,H,A]->[B,H,D]
+        x=x+self.action_pos_embeddings#[B,H,D]+[1,H,D]->[B,H,D]
         timesteps=self.t_embedder(timesteps)#[B]->[B,D]
-        state_embeddings=self.s_embedder(state_embeddings)#[B,S]->[B,D]
-        observation_embeddings=self.o_embedder(observation_embeddings)#[B,3,224,224]->[B,384]->[B,D]
-        language_embeddings=self.l_embedder(language_embeddings)#List[B]->[B,1024]->[B,D]
-        condition=timesteps+state_embeddings+observation_embeddings+language_embeddings
+
+        condition=timesteps+condition#[B,D]+[B,D]->[B,D]
 
         for block in self.blocks:
-            noisy_actions=block(noisy_actions,condition)
-        output=self.final_layer(noisy_actions,condition)
+            x=block(x,condition,action_mask)
+        output=self.final_layer(x,condition)
         return output
