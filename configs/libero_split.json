@@ -1,0 +1,309 @@
+{
+  "version": 1,
+  "seed": 42,
+  "val_ratio": 0.2,
+  "train": [
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_0",
+      "length": 80,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_1",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_2",
+      "length": 89,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_4",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_5",
+      "length": 92,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_6",
+      "length": 94,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_7",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_8",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_10",
+      "length": 97,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_11",
+      "length": 88,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_12",
+      "length": 103,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_13",
+      "length": 90,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_14",
+      "length": 89,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_15",
+      "length": 99,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_16",
+      "length": 91,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_17",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_19",
+      "length": 81,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_20",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_21",
+      "length": 88,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_22",
+      "length": 79,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_24",
+      "length": 92,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_26",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_28",
+      "length": 95,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_29",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_31",
+      "length": 81,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_32",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_33",
+      "length": 79,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_34",
+      "length": 75,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_35",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_38",
+      "length": 90,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_39",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_40",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_41",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_42",
+      "length": 87,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_43",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_44",
+      "length": 119,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_45",
+      "length": 79,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_46",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_48",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_49",
+      "length": 90,
+      "instruction": "turn on the stove"
+    }
+  ],
+  "val": [
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_3",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_9",
+      "length": 77,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_18",
+      "length": 77,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_23",
+      "length": 92,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_25",
+      "length": 90,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_27",
+      "length": 100,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_30",
+      "length": 95,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_36",
+      "length": 84,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_37",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_47",
+      "length": 77,
+      "instruction": "turn on the stove"
+    }
+  ]
+}

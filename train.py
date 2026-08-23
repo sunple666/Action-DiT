@@ -8,6 +8,7 @@ from data.action_dataset import ActionDataset
 import argparse
 
 device="cuda" if torch.cuda.is_available() else "cpu"
+assert device=="cuda"
 
 action_dim=7
 action_chunk=16
@@ -18,8 +19,14 @@ learn_sigma=True
 
 def get_args():
     parser=argparse.ArgumentParser()
-    parser.add_argument("--num_epochs",type=int,default=1000)
-    parser.add_argument("--batch_size",type=int,default=4)
+    parser.add_argument("--dataset_root",type=str,required=True)
+    parser.add_argument("--manifest_path",type=str,required=True)
+    parser.add_argument("--num_epochs",type=int,default=1)
+    parser.add_argument("--batch_size",type=int,default=1)
+    parser.add_argument("--num_workers",type=int,default=0)
+    parser.add_argument("--max_steps",type=int,default=1)
+    parser.add_argument("--lr",type=float,default=1e-4)
+
     args=parser.parse_args()
     return args
 
@@ -98,25 +105,29 @@ def main(args):
 
     optimizer=torch.optim.AdamW(
     model.parameters(),
-    lr=1e-4,
+    lr=args.lr,
     weight_decay=0.01
     )
 
-    train_dataset = ActionDataset()
+    train_dataset = ActionDataset(
+        dataset_root=args.dataset_root,
+        manifest_path=args.manifest_path,
+        split="train",
+        action_chunk=action_chunk,
+    )
 
     train_loader = DataLoader(
     dataset=train_dataset,
     batch_size=args.batch_size,
     shuffle=True,
-    num_workers=4,
+    num_workers=args.num_workers,
     pin_memory=True,
     drop_last=False,
     )
 
-    action_min=torch.tensor([-1.0]*action_dim,dtype=torch.float32).to(device)
-    action_max=torch.tensor([1.0]*action_dim,dtype=torch.float32).to(device)
+    normalizer=ActionNormalizer.from_stats_file("configs/libero_action_stats.json").to(device)
 
-    normalizer=ActionNormalizer(action_min,action_max).to(device)
+
 
     num_epochs=args.num_epochs
 
@@ -124,13 +135,26 @@ def main(args):
     model.o_embedder.dino.eval()
     model.l_embedder.qwen.eval()
 
+    current_steps=0
+    max_steps=args.max_steps
+    should_stop=False
+    
     for epoch in range(num_epochs):
-        for step,batch in enumerate(train_loader):
+        for _,batch in enumerate(train_loader):
             metrics=train_step(model,diffusion,normalizer,optimizer,batch,device)
-            if step%10==0:
+            if current_steps%100==0:
                 print(
-                    f"epoch {epoch}, step {step}, loss: {metrics['loss']:.4f}, mse: {metrics['loss_mse']:.4f}, vb: {metrics['loss_vb']:.4f}"
+                    f"epoch {epoch}, step {current_steps}, loss: {metrics['loss']:.4f}, mse: {metrics['loss_mse']:.4f}, vb: {metrics['loss_vb']:.4f}"
                 )
+            current_steps+=1
+            if current_steps>=max_steps:
+                should_stop=True
+                print("训练完成")
+                break
+        if should_stop:
+            break
+
+    train_dataset.close()
 
 if __name__=="__main__":
     args=get_args()
