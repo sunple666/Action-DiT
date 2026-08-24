@@ -59,9 +59,9 @@ class StateEmbedder(nn.Module):
         return x
 
 class ObservationEmbedder(nn.Module):
-    def __init__(self,dino_dim,hidden_dim):
+    def __init__(self,dino_dim,hidden_dim,dino_repo,dino_weights):
         super().__init__()
-        self.dino=DINOv2Encoder()
+        self.dino=DINOv2Encoder(repo=dino_repo,weights=dino_weights)
         self.mlp=nn.Sequential(
             nn.Linear(in_features=dino_dim,out_features=hidden_dim,bias=True),
             nn.SiLU(),
@@ -73,9 +73,9 @@ class ObservationEmbedder(nn.Module):
         return x
 
 class LanguageEmbedder(nn.Module):
-    def __init__(self,qwen_dim,hidden_dim):
+    def __init__(self,qwen_dim,hidden_dim,qwen_model_path,qwen_dtype):
         super().__init__()
-        self.qwen=QwenEncoder()
+        self.qwen=QwenEncoder(model_path=qwen_model_path,dtype=qwen_dtype)
         self.mlp=nn.Sequential(
             nn.Linear(in_features=qwen_dim,out_features=hidden_dim,bias=True),
             nn.SiLU(),
@@ -141,7 +141,22 @@ class ActionDiT(nn.Module):
     # 状态[B,S]
     # 图像[B,3,224,224]
     # 指令List[B]
-    def __init__(self,action_dim,time_dim,state_dim,hidden_dim,depth=6,dino_dim=384,qwen_dim=1024,action_chunk=16,learn_sigma=True):
+    def __init__(
+        self,
+        action_dim,
+        time_dim,
+        state_dim,
+        hidden_dim,
+        depth=6,
+        dino_dim=384,
+        qwen_dim=1024,
+        action_chunk=16,
+        learn_sigma=True,
+        dino_repo="facebookresearch/dinov2",
+        dino_weights=None,
+        qwen_model_path="Qwen/Qwen3-Embedding-0.6B",
+        qwen_dtype=torch.bfloat16,
+    ):
         super().__init__()
 
         self.out_dim=2*action_dim if learn_sigma else action_dim
@@ -152,8 +167,12 @@ class ActionDiT(nn.Module):
         nn.init.normal_(self.action_pos_embeddings,mean=0.0,std=0.02)
         self.t_embedder=TimestepEmbedder(time_dim,hidden_dim)
         self.s_embedder=StateEmbedder(state_dim,hidden_dim)
-        self.o_embedder=ObservationEmbedder(dino_dim,hidden_dim)
-        self.l_embedder=LanguageEmbedder(qwen_dim,hidden_dim)
+        self.o_embedder=ObservationEmbedder(
+            dino_dim,hidden_dim,dino_repo,dino_weights
+        )
+        self.l_embedder=LanguageEmbedder(
+            qwen_dim,hidden_dim,qwen_model_path,qwen_dtype
+        )
 
         self.blocks=nn.ModuleList([
             ActionDiTBlock(hidden_dim=hidden_dim,mlp_hidden_dim=hidden_dim*4,num_heads=8,hidden_size=hidden_dim)
