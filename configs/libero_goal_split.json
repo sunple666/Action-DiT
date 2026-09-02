@@ -1,0 +1,3009 @@
+{
+  "version": 1,
+  "seed": 42,
+  "val_ratio": 0.2,
+  "train": [
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_1",
+      "length": 138,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_3",
+      "length": 131,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_4",
+      "length": 141,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_5",
+      "length": 139,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_6",
+      "length": 121,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_7",
+      "length": 141,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_8",
+      "length": 125,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_9",
+      "length": 158,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_11",
+      "length": 127,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_13",
+      "length": 128,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_14",
+      "length": 128,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_15",
+      "length": 140,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_16",
+      "length": 185,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_18",
+      "length": 126,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_21",
+      "length": 128,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_22",
+      "length": 129,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_23",
+      "length": 137,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_24",
+      "length": 153,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_25",
+      "length": 160,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_26",
+      "length": 128,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_27",
+      "length": 156,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_28",
+      "length": 187,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_29",
+      "length": 146,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_31",
+      "length": 196,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_32",
+      "length": 167,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_33",
+      "length": 139,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_34",
+      "length": 146,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_35",
+      "length": 143,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_36",
+      "length": 126,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_39",
+      "length": 123,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_40",
+      "length": 150,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_41",
+      "length": 136,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_42",
+      "length": 131,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_43",
+      "length": 130,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_44",
+      "length": 137,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_45",
+      "length": 136,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_46",
+      "length": 124,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_47",
+      "length": 127,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_48",
+      "length": 143,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_49",
+      "length": 129,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_0",
+      "length": 170,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_1",
+      "length": 187,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_2",
+      "length": 284,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_3",
+      "length": 199,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_5",
+      "length": 176,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_6",
+      "length": 178,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_8",
+      "length": 184,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_9",
+      "length": 173,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_10",
+      "length": 299,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_12",
+      "length": 215,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_13",
+      "length": 190,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_14",
+      "length": 178,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_15",
+      "length": 185,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_16",
+      "length": 249,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_19",
+      "length": 196,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_20",
+      "length": 185,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_21",
+      "length": 170,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_22",
+      "length": 218,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_23",
+      "length": 200,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_25",
+      "length": 188,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_26",
+      "length": 229,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_27",
+      "length": 184,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_28",
+      "length": 270,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_29",
+      "length": 202,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_30",
+      "length": 199,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_31",
+      "length": 206,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_32",
+      "length": 199,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_33",
+      "length": 203,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_35",
+      "length": 186,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_36",
+      "length": 227,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_39",
+      "length": 184,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_41",
+      "length": 178,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_42",
+      "length": 204,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_43",
+      "length": 194,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_44",
+      "length": 195,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_45",
+      "length": 219,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_46",
+      "length": 190,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_47",
+      "length": 251,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_48",
+      "length": 206,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_49",
+      "length": 209,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_0",
+      "length": 155,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_2",
+      "length": 125,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_3",
+      "length": 200,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_4",
+      "length": 193,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_5",
+      "length": 117,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_6",
+      "length": 154,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_7",
+      "length": 123,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_8",
+      "length": 139,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_9",
+      "length": 146,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_10",
+      "length": 215,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_11",
+      "length": 144,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_12",
+      "length": 142,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_13",
+      "length": 151,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_14",
+      "length": 178,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_15",
+      "length": 136,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_16",
+      "length": 206,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_18",
+      "length": 167,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_19",
+      "length": 163,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_20",
+      "length": 175,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_21",
+      "length": 149,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_22",
+      "length": 147,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_24",
+      "length": 169,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_25",
+      "length": 153,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_26",
+      "length": 145,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_27",
+      "length": 220,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_28",
+      "length": 147,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_29",
+      "length": 136,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_30",
+      "length": 142,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_32",
+      "length": 115,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_33",
+      "length": 126,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_35",
+      "length": 169,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_38",
+      "length": 134,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_39",
+      "length": 146,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_40",
+      "length": 128,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_42",
+      "length": 130,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_43",
+      "length": 182,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_44",
+      "length": 143,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_46",
+      "length": 138,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_48",
+      "length": 183,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_49",
+      "length": 118,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_0",
+      "length": 90,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_1",
+      "length": 88,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_2",
+      "length": 92,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_3",
+      "length": 94,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_4",
+      "length": 80,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_6",
+      "length": 105,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_7",
+      "length": 92,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_8",
+      "length": 84,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_9",
+      "length": 90,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_10",
+      "length": 112,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_11",
+      "length": 85,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_12",
+      "length": 88,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_13",
+      "length": 98,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_14",
+      "length": 87,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_16",
+      "length": 95,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_17",
+      "length": 88,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_18",
+      "length": 93,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_19",
+      "length": 95,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_20",
+      "length": 95,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_21",
+      "length": 106,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_22",
+      "length": 80,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_24",
+      "length": 90,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_25",
+      "length": 103,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_27",
+      "length": 87,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_30",
+      "length": 103,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_31",
+      "length": 97,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_32",
+      "length": 92,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_33",
+      "length": 86,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_35",
+      "length": 94,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_38",
+      "length": 106,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_39",
+      "length": 83,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_40",
+      "length": 90,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_41",
+      "length": 90,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_42",
+      "length": 103,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_43",
+      "length": 126,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_44",
+      "length": 89,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_45",
+      "length": 109,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_46",
+      "length": 79,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_47",
+      "length": 93,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_49",
+      "length": 89,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_1",
+      "length": 99,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_2",
+      "length": 110,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_3",
+      "length": 97,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_4",
+      "length": 104,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_5",
+      "length": 99,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_7",
+      "length": 92,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_9",
+      "length": 94,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_11",
+      "length": 93,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_12",
+      "length": 111,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_13",
+      "length": 94,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_14",
+      "length": 123,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_15",
+      "length": 102,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_16",
+      "length": 97,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_17",
+      "length": 114,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_18",
+      "length": 104,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_19",
+      "length": 106,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_21",
+      "length": 92,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_22",
+      "length": 104,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_23",
+      "length": 100,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_24",
+      "length": 100,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_25",
+      "length": 104,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_26",
+      "length": 92,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_27",
+      "length": 104,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_29",
+      "length": 91,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_30",
+      "length": 108,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_31",
+      "length": 114,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_33",
+      "length": 103,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_34",
+      "length": 98,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_35",
+      "length": 92,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_36",
+      "length": 99,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_37",
+      "length": 91,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_38",
+      "length": 103,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_39",
+      "length": 99,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_40",
+      "length": 115,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_41",
+      "length": 95,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_42",
+      "length": 98,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_44",
+      "length": 95,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_45",
+      "length": 98,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_48",
+      "length": 91,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_49",
+      "length": 106,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_0",
+      "length": 91,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_1",
+      "length": 110,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_2",
+      "length": 99,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_3",
+      "length": 123,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_4",
+      "length": 86,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_5",
+      "length": 96,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_6",
+      "length": 102,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_7",
+      "length": 106,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_9",
+      "length": 110,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_10",
+      "length": 88,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_11",
+      "length": 105,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_12",
+      "length": 98,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_14",
+      "length": 101,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_15",
+      "length": 105,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_16",
+      "length": 97,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_19",
+      "length": 119,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_20",
+      "length": 100,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_22",
+      "length": 109,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_23",
+      "length": 91,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_25",
+      "length": 103,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_26",
+      "length": 93,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_27",
+      "length": 99,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_30",
+      "length": 103,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_31",
+      "length": 102,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_32",
+      "length": 100,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_33",
+      "length": 112,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_34",
+      "length": 142,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_36",
+      "length": 97,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_37",
+      "length": 99,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_38",
+      "length": 87,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_39",
+      "length": 98,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_40",
+      "length": 97,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_41",
+      "length": 104,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_42",
+      "length": 95,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_43",
+      "length": 96,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_44",
+      "length": 90,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_46",
+      "length": 148,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_47",
+      "length": 120,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_48",
+      "length": 98,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_49",
+      "length": 98,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_1",
+      "length": 113,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_2",
+      "length": 103,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_3",
+      "length": 104,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_5",
+      "length": 92,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_6",
+      "length": 110,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_7",
+      "length": 95,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_9",
+      "length": 95,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_10",
+      "length": 107,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_11",
+      "length": 98,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_12",
+      "length": 136,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_13",
+      "length": 96,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_15",
+      "length": 86,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_16",
+      "length": 105,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_17",
+      "length": 107,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_19",
+      "length": 92,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_20",
+      "length": 109,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_21",
+      "length": 169,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_22",
+      "length": 95,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_23",
+      "length": 152,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_24",
+      "length": 104,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_25",
+      "length": 108,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_26",
+      "length": 147,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_27",
+      "length": 113,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_28",
+      "length": 95,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_30",
+      "length": 95,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_31",
+      "length": 95,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_33",
+      "length": 111,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_34",
+      "length": 107,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_35",
+      "length": 96,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_36",
+      "length": 94,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_37",
+      "length": 96,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_38",
+      "length": 103,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_39",
+      "length": 131,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_40",
+      "length": 135,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_41",
+      "length": 90,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_43",
+      "length": 104,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_45",
+      "length": 113,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_47",
+      "length": 110,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_48",
+      "length": 135,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_49",
+      "length": 102,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_0",
+      "length": 347,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_2",
+      "length": 184,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_3",
+      "length": 258,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_4",
+      "length": 158,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_5",
+      "length": 170,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_7",
+      "length": 156,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_8",
+      "length": 201,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_9",
+      "length": 169,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_10",
+      "length": 157,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_11",
+      "length": 148,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_12",
+      "length": 177,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_14",
+      "length": 199,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_16",
+      "length": 163,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_17",
+      "length": 218,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_18",
+      "length": 184,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_19",
+      "length": 170,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_20",
+      "length": 182,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_21",
+      "length": 153,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_22",
+      "length": 155,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_24",
+      "length": 152,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_25",
+      "length": 172,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_26",
+      "length": 152,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_28",
+      "length": 170,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_29",
+      "length": 160,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_30",
+      "length": 155,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_31",
+      "length": 192,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_32",
+      "length": 173,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_33",
+      "length": 179,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_34",
+      "length": 151,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_35",
+      "length": 158,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_36",
+      "length": 153,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_37",
+      "length": 162,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_38",
+      "length": 167,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_41",
+      "length": 169,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_42",
+      "length": 138,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_43",
+      "length": 179,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_45",
+      "length": 189,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_47",
+      "length": 196,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_48",
+      "length": 149,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_49",
+      "length": 164,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_1",
+      "length": 130,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_2",
+      "length": 87,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_3",
+      "length": 123,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_4",
+      "length": 105,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_5",
+      "length": 93,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_6",
+      "length": 116,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_7",
+      "length": 113,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_8",
+      "length": 107,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_9",
+      "length": 100,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_10",
+      "length": 104,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_12",
+      "length": 90,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_13",
+      "length": 93,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_14",
+      "length": 100,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_15",
+      "length": 116,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_16",
+      "length": 92,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_17",
+      "length": 114,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_19",
+      "length": 115,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_20",
+      "length": 104,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_22",
+      "length": 101,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_23",
+      "length": 120,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_24",
+      "length": 121,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_26",
+      "length": 104,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_27",
+      "length": 100,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_28",
+      "length": 114,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_29",
+      "length": 146,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_30",
+      "length": 100,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_32",
+      "length": 97,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_33",
+      "length": 106,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_35",
+      "length": 101,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_36",
+      "length": 105,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_37",
+      "length": 92,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_39",
+      "length": 102,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_40",
+      "length": 110,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_43",
+      "length": 92,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_44",
+      "length": 90,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_45",
+      "length": 128,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_46",
+      "length": 142,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_47",
+      "length": 107,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_48",
+      "length": 92,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_49",
+      "length": 116,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_0",
+      "length": 80,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_1",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_2",
+      "length": 89,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_4",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_5",
+      "length": 92,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_6",
+      "length": 94,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_7",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_8",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_10",
+      "length": 97,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_11",
+      "length": 88,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_12",
+      "length": 103,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_13",
+      "length": 90,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_14",
+      "length": 89,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_15",
+      "length": 99,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_16",
+      "length": 91,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_17",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_19",
+      "length": 81,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_20",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_21",
+      "length": 88,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_22",
+      "length": 79,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_24",
+      "length": 92,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_26",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_28",
+      "length": 95,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_29",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_31",
+      "length": 81,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_32",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_33",
+      "length": 79,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_34",
+      "length": 75,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_35",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_38",
+      "length": 90,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_39",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_40",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_41",
+      "length": 96,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_42",
+      "length": 87,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_43",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_44",
+      "length": 119,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_45",
+      "length": 79,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_46",
+      "length": 93,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_48",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_49",
+      "length": 90,
+      "instruction": "turn on the stove"
+    }
+  ],
+  "val": [
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_0",
+      "length": 138,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_2",
+      "length": 151,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_10",
+      "length": 130,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_12",
+      "length": 138,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_17",
+      "length": 195,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_19",
+      "length": 127,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_20",
+      "length": 116,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_30",
+      "length": 136,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_37",
+      "length": 133,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_middle_drawer_of_the_cabinet_demo.hdf5",
+      "demo": "demo_38",
+      "length": 128,
+      "instruction": "open the middle drawer of the cabinet"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_4",
+      "length": 250,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_7",
+      "length": 202,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_11",
+      "length": 228,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_17",
+      "length": 177,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_18",
+      "length": 184,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_24",
+      "length": 219,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_34",
+      "length": 198,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_37",
+      "length": 221,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_38",
+      "length": 183,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/open_the_top_drawer_and_put_the_bowl_inside_demo.hdf5",
+      "demo": "demo_40",
+      "length": 187,
+      "instruction": "open the top drawer and put the bowl inside"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_1",
+      "length": 128,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_17",
+      "length": 134,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_23",
+      "length": 129,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_31",
+      "length": 135,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_34",
+      "length": 154,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_36",
+      "length": 145,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_37",
+      "length": 203,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_41",
+      "length": 188,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_45",
+      "length": 132,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/push_the_plate_to_the_front_of_the_stove_demo.hdf5",
+      "demo": "demo_47",
+      "length": 141,
+      "instruction": "push the plate to the front of the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_5",
+      "length": 89,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_15",
+      "length": 84,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_23",
+      "length": 107,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_26",
+      "length": 96,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_28",
+      "length": 87,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_29",
+      "length": 103,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_34",
+      "length": 92,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_36",
+      "length": 79,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_37",
+      "length": 96,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_plate_demo.hdf5",
+      "demo": "demo_48",
+      "length": 90,
+      "instruction": "put the bowl on the plate"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_0",
+      "length": 94,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_6",
+      "length": 112,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_8",
+      "length": 101,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_10",
+      "length": 96,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_20",
+      "length": 119,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_28",
+      "length": 102,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_32",
+      "length": 90,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_43",
+      "length": 102,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_46",
+      "length": 119,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_the_stove_demo.hdf5",
+      "demo": "demo_47",
+      "length": 115,
+      "instruction": "put the bowl on the stove"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_8",
+      "length": 96,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_13",
+      "length": 103,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_17",
+      "length": 90,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_18",
+      "length": 105,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_21",
+      "length": 105,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_24",
+      "length": 108,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_28",
+      "length": 91,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_29",
+      "length": 90,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_35",
+      "length": 96,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_bowl_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_45",
+      "length": 93,
+      "instruction": "put the bowl on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_0",
+      "length": 92,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_4",
+      "length": 94,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_8",
+      "length": 99,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_14",
+      "length": 106,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_18",
+      "length": 96,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_29",
+      "length": 104,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_32",
+      "length": 85,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_42",
+      "length": 112,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_44",
+      "length": 99,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_cream_cheese_in_the_bowl_demo.hdf5",
+      "demo": "demo_46",
+      "length": 114,
+      "instruction": "put the cream cheese in the bowl"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_1",
+      "length": 174,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_6",
+      "length": 152,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_13",
+      "length": 155,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_15",
+      "length": 149,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_23",
+      "length": 204,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_27",
+      "length": 177,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_39",
+      "length": 164,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_40",
+      "length": 177,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_44",
+      "length": 173,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_the_rack_demo.hdf5",
+      "demo": "demo_46",
+      "length": 254,
+      "instruction": "put the wine bottle on the rack"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_0",
+      "length": 93,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_11",
+      "length": 99,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_18",
+      "length": 129,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_21",
+      "length": 101,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_25",
+      "length": 100,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_31",
+      "length": 93,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_34",
+      "length": 122,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_38",
+      "length": 105,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_41",
+      "length": 127,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/put_the_wine_bottle_on_top_of_the_cabinet_demo.hdf5",
+      "demo": "demo_42",
+      "length": 137,
+      "instruction": "put the wine bottle on top of the cabinet"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_3",
+      "length": 86,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_9",
+      "length": 77,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_18",
+      "length": 77,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_23",
+      "length": 92,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_25",
+      "length": 90,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_27",
+      "length": 100,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_30",
+      "length": 95,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_36",
+      "length": 84,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_37",
+      "length": 85,
+      "instruction": "turn on the stove"
+    },
+    {
+      "file": "libero_goal/turn_on_the_stove_demo.hdf5",
+      "demo": "demo_47",
+      "length": 77,
+      "instruction": "turn on the stove"
+    }
+  ]
+}
