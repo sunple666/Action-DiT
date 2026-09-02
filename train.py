@@ -64,7 +64,7 @@ def setup_logging(run_dir: Path) -> Path:
 
 
 def _default_dino_repo() -> str:
-    configured = os.environ.get("ACTIONDIT_DINO_REPO")
+    configured = os.environ.get("ACTIONDIT_DINO_REPO") or os.environ.get("DINO_REPO")
     if configured:
         return configured
     torch_home = Path(os.environ.get("TORCH_HOME", "~/.cache/torch")).expanduser()
@@ -73,7 +73,9 @@ def _default_dino_repo() -> str:
 
 
 def _default_dino_weights() -> str | None:
-    configured = os.environ.get("ACTIONDIT_DINO_WEIGHTS")
+    configured = os.environ.get("ACTIONDIT_DINO_WEIGHTS") or os.environ.get(
+        "DINO_WEIGHTS"
+    )
     if configured:
         return configured
     torch_home = Path(os.environ.get("TORCH_HOME", "~/.cache/torch")).expanduser()
@@ -81,16 +83,31 @@ def _default_dino_weights() -> str | None:
     return str(cached_weights) if cached_weights.is_file() else None
 
 
+def _default_dataset_root() -> Path:
+    configured = os.environ.get("DATASET_ROOT")
+    if configured:
+        return Path(configured)
+    store = os.environ.get("STORE")
+    return Path(store) / "datasets" / "libero" if store else Path("datasets/libero")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset_root", type=Path, required=True)
-    parser.add_argument("--manifest_path", type=Path, required=True)
-    parser.add_argument("--stats_path", type=Path, required=True)
+    parser.add_argument("--dataset_root", type=Path, default=_default_dataset_root())
+    parser.add_argument(
+        "--manifest_path", type=Path, default=Path("configs/libero_goal_split.json")
+    )
+    parser.add_argument(
+        "--stats_path",
+        type=Path,
+        default=Path("configs/libero_goal_action_stats.json"),
+    )
     parser.add_argument("--output_dir", type=Path, default="Action-DiT/outputs")
     parser.add_argument(
         "--qwen_model_path",
         default=os.environ.get(
-            "ACTIONDIT_QWEN_MODEL", "Qwen/Qwen3-Embedding-0.6B"
+            "ACTIONDIT_QWEN_MODEL",
+            os.environ.get("QWEN_MODEL", "Qwen/Qwen3-Embedding-0.6B"),
         ),
     )
     parser.add_argument("--dino_repo", default=_default_dino_repo())

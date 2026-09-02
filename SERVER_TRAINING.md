@@ -31,6 +31,10 @@ export DINO_REPO="$TORCH_HOME/hub/facebookresearch_dinov2_main"
 export DINO_WEIGHTS="$TORCH_HOME/hub/checkpoints/dinov2_vits14_pretrain.pth"
 ```
 
+`train.py` uses `DATASET_ROOT`, `configs/libero_goal_split.json`, and
+`configs/libero_goal_action_stats.json` as defaults, so they do not need to be
+repeated in the training command.
+
 The dataset root must contain `libero_goal/*.hdf5`. Verify the model files:
 
 ```bash
