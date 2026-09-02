@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import random
+import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +29,39 @@ TIME_DIM = 128
 HIDDEN_DIM = 256
 LEARN_SIGMA = True
 
+LOGGER = logging.getLogger("actiondit.train")
+
+
+def create_run_directory(output_root: Path) -> Path:
+    """Create a unique output directory for one training invocation."""
+    run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    run_dir = output_root.expanduser() / f"run_{run_timestamp}"
+    run_dir.mkdir(parents=True, exist_ok=False)
+    return run_dir
+
+
+def setup_logging(run_dir: Path) -> Path:
+    """Write training messages to both the console and a persistent log file."""
+    log_path = run_dir / "train.log"
+    formatter = logging.Formatter(
+        fmt="%(asctime)s | %(levelname)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    for handler in LOGGER.handlers:
+        handler.close()
+    LOGGER.handlers.clear()
+    LOGGER.setLevel(logging.INFO)
+    LOGGER.propagate = False
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    file_handler = logging.FileHandler(log_path, mode="w", encoding="utf-8")
+    file_handler.setFormatter(formatter)
+    LOGGER.addHandler(console_handler)
+    LOGGER.addHandler(file_handler)
+    return log_path
+
 
 def _default_dino_repo() -> str:
     configured = os.environ.get("ACTIONDIT_DINO_REPO")
@@ -46,13 +82,11 @@ def _default_dino_weights() -> str | None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Train ActionDiT on a LIBERO HDF5 split."
-    )
+    parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_root", type=Path, required=True)
     parser.add_argument("--manifest_path", type=Path, required=True)
     parser.add_argument("--stats_path", type=Path, required=True)
-    parser.add_argument("--output_dir", type=Path, required=True)
+    parser.add_argument("--output_dir", type=Path, default="Action-DiT/outputs")
     parser.add_argument(
         "--qwen_model_path",
         default=os.environ.get(
@@ -78,22 +112,17 @@ def parse_args() -> argparse.Namespace:
         "--precision", choices=("fp32", "bf16", "fp16"), default="bf16"
     )
 
-    parser.add_argument("--log_every", type=int, default=20)
-    parser.add_argument("--save_every", type=int, default=1000)
+    parser.add_argument("--log_every", type=int, default=100)
     parser.add_argument("--val_every", type=int, default=1000)
     parser.add_argument("--val_batches", type=int, default=100)
     parser.add_argument("--resume", type=Path)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument(
-        "--pin_memory", action=argparse.BooleanOptionalAction, default=True
-    )
+    parser.add_argument("--seed", type=int, default=16)
     args = parser.parse_args()
 
     positive_names = (
         "num_epochs",
         "batch_size",
         "log_every",
-        "save_every",
         "val_every",
         "val_batches",
     )
@@ -257,6 +286,7 @@ def save_checkpoint(
     args: argparse.Namespace,
     epoch: int,
     global_step: int,
+    best_val_loss: float,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -266,12 +296,17 @@ def save_checkpoint(
         "scaler": scaler.state_dict(),
         "epoch": epoch,
         "global_step": global_step,
+        "best_val_loss": best_val_loss,
         "args": _serialized_args(args),
     }
     temporary_path = path.with_suffix(path.suffix + ".tmp")
     torch.save(payload, temporary_path)
     temporary_path.replace(path)
-    print(f"checkpoint: {path}")
+    LOGGER.info(
+        "best checkpoint updated: %s (validation loss=%.5f)",
+        path,
+        best_val_loss,
+    )
 
 
 def load_checkpoint(
@@ -293,9 +328,13 @@ def load_checkpoint(
     scaler.load_state_dict(checkpoint.get("scaler", {}))
     epoch = int(checkpoint["epoch"])
     global_step = int(checkpoint["global_step"])
-    print(
-        f"resumed: {checkpoint_path} (epoch={epoch}, step={global_step}, "
-        f"frozen keys reloaded from pretrained models={len(incompatible.missing_keys)})"
+    LOGGER.info(
+        "resumed: %s (epoch=%d, step=%d, "
+        "frozen keys reloaded from pretrained models=%d)",
+        checkpoint_path,
+        epoch,
+        global_step,
+        len(incompatible.missing_keys),
     )
     return epoch, global_step
 
@@ -312,7 +351,6 @@ def make_loader(
         batch_size=args.batch_size,
         shuffle=shuffle,
         num_workers=args.num_workers,
-        pin_memory=args.pin_memory,
         drop_last=False,
         persistent_workers=args.num_workers > 0,
         worker_init_fn=seed_worker,
@@ -321,6 +359,10 @@ def make_loader(
 
 
 def main(args: argparse.Namespace) -> None:
+    args.output_dir = create_run_directory(args.output_dir)
+    log_path = setup_logging(args.output_dir)
+    LOGGER.info("output directory: %s", args.output_dir.resolve())
+    LOGGER.info("log file: %s", log_path.resolve())
     if not torch.cuda.is_available():
         raise RuntimeError("ActionDiT training requires a CUDA GPU")
     if args.precision == "bf16" and not torch.cuda.is_bf16_supported():
@@ -331,7 +373,6 @@ def main(args: argparse.Namespace) -> None:
     torch.set_float32_matmul_precision("high")
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.backends.cudnn.allow_tf32 = True
-    args.output_dir.mkdir(parents=True, exist_ok=True)
     (args.output_dir / "run_config.json").write_text(
         json.dumps(_serialized_args(args), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -400,14 +441,20 @@ def main(args: argparse.Namespace) -> None:
 
     trainable_count = sum(parameter.numel() for parameter in trainable_parameters)
     total_count = sum(parameter.numel() for parameter in model.parameters())
-    print(f"device: {torch.cuda.get_device_name(device)}")
-    print(f"precision: {args.precision}")
-    print(f"train samples: {len(train_dataset)}, val samples: {len(val_dataset)}")
-    print(f"parameters: trainable={trainable_count:,}, total={total_count:,}")
+    LOGGER.info("device: %s", torch.cuda.get_device_name(device))
+    LOGGER.info("precision: %s", args.precision)
+    LOGGER.info(
+        "train samples: %d, val samples: %d", len(train_dataset), len(val_dataset)
+    )
+    LOGGER.info(
+        "parameters: trainable=%s, total=%s",
+        f"{trainable_count:,}",
+        f"{total_count:,}",
+    )
 
     writer = SummaryWriter(log_dir=args.output_dir / "tensorboard")
     model.train()
-    last_saved_step = -1
+    best_val_loss = float("inf")
     final_epoch = start_epoch
     stop = False
 
@@ -437,13 +484,16 @@ def main(args: argparse.Namespace) -> None:
 
                 if global_step % args.log_every == 0 or global_step == 1:
                     memory_gb = torch.cuda.max_memory_allocated() / 1024**3
-                    print(
-                        f"epoch={epoch} step={global_step} "
-                        f"loss={metrics['loss']:.5f} "
-                        f"mse={metrics['loss_mse']:.5f} "
-                        f"vb={metrics['loss_vb']:.5f} "
-                        f"grad={float(grad_norm):.4f} "
-                        f"max_vram_gb={memory_gb:.2f}"
+                    LOGGER.info(
+                        "epoch=%d step=%d loss=%.5f mse=%.5f vb=%.5f "
+                        "grad=%.4f max_vram_gb=%.2f",
+                        epoch,
+                        global_step,
+                        metrics["loss"],
+                        metrics["loss_mse"],
+                        metrics["loss_vb"],
+                        float(grad_norm),
+                        memory_gb,
                     )
                     for key, value in metrics.items():
                         writer.add_scalar(f"train/{key}", value, global_step)
@@ -460,26 +510,28 @@ def main(args: argparse.Namespace) -> None:
                         amp_dtype,
                         args.val_batches,
                     )
-                    print(
-                        f"validation step={global_step} "
-                        f"loss={val_metrics['loss']:.5f} "
-                        f"mse={val_metrics['loss_mse']:.5f} "
-                        f"vb={val_metrics['loss_vb']:.5f}"
+                    LOGGER.info(
+                        "validation step=%d loss=%.5f mse=%.5f vb=%.5f",
+                        global_step,
+                        val_metrics["loss"],
+                        val_metrics["loss_mse"],
+                        val_metrics["loss_vb"],
                     )
                     for key, value in val_metrics.items():
                         writer.add_scalar(f"val/{key}", value, global_step)
-
-                if global_step % args.save_every == 0:
-                    save_checkpoint(
-                        args.output_dir / f"step_{global_step:08d}.pt",
-                        model,
-                        optimizer,
-                        scaler,
-                        args,
-                        epoch,
-                        global_step,
-                    )
-                    last_saved_step = global_step
+                    if val_metrics["loss"] < best_val_loss:
+                        best_val_loss = val_metrics["loss"]
+                        save_checkpoint(
+                            args.output_dir / "best.pt",
+                            model,
+                            optimizer,
+                            scaler,
+                            args,
+                            epoch,
+                            global_step,
+                            best_val_loss,
+                        )
+                    writer.add_scalar("val/best_loss", best_val_loss, global_step)
 
                 if args.max_steps and global_step >= args.max_steps:
                     stop = True
@@ -498,19 +550,22 @@ def main(args: argparse.Namespace) -> None:
         )
         for key, value in final_val_metrics.items():
             writer.add_scalar(f"val_final/{key}", value, global_step)
-        print(
-            f"final validation step={global_step} "
-            f"loss={final_val_metrics['loss']:.5f}"
+        LOGGER.info(
+            "final validation step=%d loss=%.5f",
+            global_step,
+            final_val_metrics["loss"],
         )
-        if last_saved_step != global_step:
+        if final_val_metrics["loss"] < best_val_loss:
+            best_val_loss = final_val_metrics["loss"]
             save_checkpoint(
-                args.output_dir / f"step_{global_step:08d}_final.pt",
+                args.output_dir / "best.pt",
                 model,
                 optimizer,
                 scaler,
                 args,
                 final_epoch,
                 global_step,
+                best_val_loss,
             )
     finally:
         writer.close()
@@ -519,4 +574,8 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    main(parse_args())
+    try:
+        main(parse_args())
+    except Exception:
+        LOGGER.exception("training failed")
+        raise

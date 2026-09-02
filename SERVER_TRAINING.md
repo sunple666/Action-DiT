@@ -87,12 +87,25 @@ python train.py \
   --max_steps 100 \
   --log_every 10 \
   --val_every 50 \
-  --val_batches 10 \
-  --save_every 50
+  --val_batches 10
 ```
 
-Successful completion must create `run_config.json`, TensorBoard events, and a
-final `.pt` checkpoint in the output directory.
+Each training invocation creates a timestamped subdirectory under
+`--output_dir`:
+
+```text
+libero_goal_smoke/
+└── run_YYYYMMDD_HHMMSS_microseconds/
+    ├── run_config.json
+    ├── train.log
+    ├── tensorboard/
+    └── best.pt
+```
+
+Training messages are written to both the terminal and that run's `train.log`.
+After every validation, `best.pt` is replaced only when validation loss improves,
+so each run keeps a single best checkpoint. Resumed runs also create a new run
+subdirectory.
 
 ## 5. Run one complete pass over LIBERO-Goal
 
@@ -115,8 +128,7 @@ python train.py \
   --max_steps 0 \
   --log_every 20 \
   --val_every 1000 \
-  --val_batches 100 \
-  --save_every 1000
+  --val_batches 100
 ```
 
 If batch size 8 runs out of memory, retry with 4. If memory usage is comfortably
@@ -147,7 +159,7 @@ python train.py \
   --batch_size 8 \
   --num_workers 8 \
   --num_epochs 1 \
-  --resume "$STORE/outputs/libero_goal_epoch1/step_00001000.pt"
+  --resume "$STORE/outputs/libero_goal_epoch1/run_YYYYMMDD_HHMMSS_microseconds/best.pt"
 ```
 
 Checkpoints contain only trainable ActionDiT parameters and optimizer state.
