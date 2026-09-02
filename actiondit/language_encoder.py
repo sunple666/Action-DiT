@@ -9,11 +9,16 @@ class QwenEncoder(nn.Module):
         dtype: torch.dtype = torch.bfloat16,
     ):
         super().__init__()
-        self.tokenizer=AutoTokenizer.from_pretrained(model_path,padding_side="left")
+        self.tokenizer=AutoTokenizer.from_pretrained(
+            model_path,
+            padding_side="left",
+            local_files_only=True,
+        )
         self.qwen=AutoModel.from_pretrained(
             model_path,
             dtype=dtype,
             use_cache=False,
+            local_files_only=True,
         )
         self.qwen.requires_grad_(False)
         self.qwen.eval()

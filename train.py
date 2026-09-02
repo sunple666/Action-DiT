@@ -10,6 +10,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+DEFAULT_STORAGE_ROOT = Path("/root/autodl-tmp/actiondit_storage")
+PROJECT_ROOT = Path(__file__).resolve().parent
+RUNTIME_STORAGE_ROOT = Path(
+    os.environ.get("STORE", str(DEFAULT_STORAGE_ROOT))
+).expanduser()
+
 import numpy as np
 import torch
 from torch.nn.utils import clip_grad_norm_
@@ -28,7 +34,6 @@ STATE_DIM = 8
 TIME_DIM = 128
 HIDDEN_DIM = 256
 LEARN_SIGMA = True
-DEFAULT_STORAGE_ROOT = Path("/root/autodl-tmp/actiondit_storage")
 
 LOGGER = logging.getLogger("actiondit.train")
 
@@ -65,8 +70,7 @@ def setup_logging(run_dir: Path) -> Path:
 
 
 def _storage_torch_home() -> Path:
-    storage_root = Path(os.environ.get("STORE", DEFAULT_STORAGE_ROOT)).expanduser()
-    return storage_root / "cache" / "torch"
+    return RUNTIME_STORAGE_ROOT / "cache" / "torch"
 
 
 def _default_dino_repo() -> str:
@@ -93,30 +97,34 @@ def _default_dino_weights() -> str | None:
 def _default_dataset_root() -> Path:
     configured = os.environ.get("DATASET_ROOT")
     if configured:
-        return Path(configured)
-    store = os.environ.get("STORE")
-    return Path(store) / "datasets" / "libero" if store else Path("datasets/libero")
+        return Path(configured).expanduser()
+    return RUNTIME_STORAGE_ROOT / "datasets" / "libero"
+
+
+def _default_qwen_model_path() -> str:
+    configured = os.environ.get("ACTIONDIT_QWEN_MODEL") or os.environ.get(
+        "QWEN_MODEL"
+    )
+    if configured:
+        return configured
+    return str(RUNTIME_STORAGE_ROOT / "models" / "Qwen3-Embedding-0.6B")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_root", type=Path, default=_default_dataset_root())
     parser.add_argument(
-        "--manifest_path", type=Path, default=Path("configs/libero_goal_split.json")
+        "--manifest_path",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "libero_goal_split.json",
     )
     parser.add_argument(
         "--stats_path",
         type=Path,
-        default=Path("configs/libero_goal_action_stats.json"),
+        default=PROJECT_ROOT / "configs" / "libero_goal_action_stats.json",
     )
-    parser.add_argument("--output_dir", type=Path, default="Action-DiT/outputs")
-    parser.add_argument(
-        "--qwen_model_path",
-        default=os.environ.get(
-            "ACTIONDIT_QWEN_MODEL",
-            os.environ.get("QWEN_MODEL", "Qwen/Qwen3-Embedding-0.6B"),
-        ),
-    )
+    parser.add_argument("--output_dir", type=Path, default=PROJECT_ROOT / "outputs")
+    parser.add_argument("--qwen_model_path", default=_default_qwen_model_path())
     parser.add_argument("--dino_repo", default=_default_dino_repo())
     parser.add_argument("--dino_weights", default=_default_dino_weights())
 
@@ -383,6 +391,7 @@ def make_loader(
 
 
 def main(args: argparse.Namespace) -> None:
+    os.environ["TORCH_HOME"] = str(_storage_torch_home())
     args.output_dir = create_run_directory(args.output_dir)
     log_path = setup_logging(args.output_dir)
     LOGGER.info("output directory: %s", args.output_dir.resolve())
@@ -397,19 +406,25 @@ def main(args: argparse.Namespace) -> None:
     torch.set_float32_matmul_precision("high")
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.backends.cudnn.allow_tf32 = True
+    dino_repo_path = Path(args.dino_repo).expanduser().resolve()
+    if not dino_repo_path.is_dir():
+        raise NotADirectoryError(f"DINOv2 repository does not exist: {dino_repo_path}")
+    dino_weights_path = Path(args.dino_weights).expanduser().resolve()
+    if not dino_weights_path.is_file():
+        raise FileNotFoundError(f"DINOv2 weights do not exist: {dino_weights_path}")
+    qwen_model_path = Path(args.qwen_model_path).expanduser().resolve()
+    if not qwen_model_path.is_dir():
+        raise NotADirectoryError(f"Qwen model does not exist: {qwen_model_path}")
+    args.dino_repo = str(dino_repo_path)
+    args.dino_weights = str(dino_weights_path)
+    args.qwen_model_path = str(qwen_model_path)
     (args.output_dir / "run_config.json").write_text(
         json.dumps(_serialized_args(args), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-
-    dino_repo_path = Path(args.dino_repo).expanduser()
-    if dino_repo_path.is_absolute() and not dino_repo_path.is_dir():
-        raise NotADirectoryError(f"DINOv2 repository does not exist: {dino_repo_path}")
-    dino_weights_path = Path(args.dino_weights).expanduser()
-    if not dino_weights_path.is_file():
-        raise FileNotFoundError(f"DINOv2 weights do not exist: {dino_weights_path}")
     LOGGER.info("DINOv2 repository: %s", dino_repo_path)
     LOGGER.info("DINOv2 weights: %s", dino_weights_path)
+    LOGGER.info("Qwen model: %s", qwen_model_path)
 
     amp_dtype = precision_dtype(args.precision)
     qwen_dtype = torch.float32 if args.precision == "fp32" else amp_dtype
