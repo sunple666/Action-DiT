@@ -28,6 +28,7 @@ STATE_DIM = 8
 TIME_DIM = 128
 HIDDEN_DIM = 256
 LEARN_SIGMA = True
+DEFAULT_STORAGE_ROOT = Path("/root/autodl-tmp/actiondit_storage")
 
 LOGGER = logging.getLogger("actiondit.train")
 
@@ -63,13 +64,16 @@ def setup_logging(run_dir: Path) -> Path:
     return log_path
 
 
+def _storage_torch_home() -> Path:
+    storage_root = Path(os.environ.get("STORE", DEFAULT_STORAGE_ROOT)).expanduser()
+    return storage_root / "cache" / "torch"
+
+
 def _default_dino_repo() -> str:
     configured = os.environ.get("ACTIONDIT_DINO_REPO") or os.environ.get("DINO_REPO")
     if configured:
         return configured
-    torch_home = Path(os.environ.get("TORCH_HOME", "~/.cache/torch")).expanduser()
-    cached_repo = torch_home / "hub" / "facebookresearch_dinov2_main"
-    return str(cached_repo) if cached_repo.is_dir() else "facebookresearch/dinov2"
+    return str(_storage_torch_home() / "hub" / "facebookresearch_dinov2_main")
 
 
 def _default_dino_weights() -> str | None:
@@ -78,9 +82,12 @@ def _default_dino_weights() -> str | None:
     )
     if configured:
         return configured
-    torch_home = Path(os.environ.get("TORCH_HOME", "~/.cache/torch")).expanduser()
-    cached_weights = torch_home / "hub" / "checkpoints" / "dinov2_vits14_pretrain.pth"
-    return str(cached_weights) if cached_weights.is_file() else None
+    return str(
+        _storage_torch_home()
+        / "hub"
+        / "checkpoints"
+        / "dinov2_vits14_pretrain.pth"
+    )
 
 
 def _default_dataset_root() -> Path:
@@ -394,6 +401,15 @@ def main(args: argparse.Namespace) -> None:
         json.dumps(_serialized_args(args), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+
+    dino_repo_path = Path(args.dino_repo).expanduser()
+    if dino_repo_path.is_absolute() and not dino_repo_path.is_dir():
+        raise NotADirectoryError(f"DINOv2 repository does not exist: {dino_repo_path}")
+    dino_weights_path = Path(args.dino_weights).expanduser()
+    if not dino_weights_path.is_file():
+        raise FileNotFoundError(f"DINOv2 weights do not exist: {dino_weights_path}")
+    LOGGER.info("DINOv2 repository: %s", dino_repo_path)
+    LOGGER.info("DINOv2 weights: %s", dino_weights_path)
 
     amp_dtype = precision_dtype(args.precision)
     qwen_dtype = torch.float32 if args.precision == "fp32" else amp_dtype
