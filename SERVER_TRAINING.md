@@ -103,13 +103,14 @@ libero_goal_smoke/
     ├── run_config.json
     ├── train.log
     ├── tensorboard/
-    └── best.pt
+    ├── best.pt
+    └── last.pt
 ```
 
 Training messages are written to both the terminal and that run's `train.log`.
 After every validation, `best.pt` is replaced only when validation loss improves,
-so each run keeps a single best checkpoint. Resumed runs also create a new run
-subdirectory.
+while `last.pt` stores the latest state saved at validation time. Resume from
+`last.pt` after an interruption. Resumed runs also create a new run subdirectory.
 
 ## 5. Run one complete pass over LIBERO-Goal
 
@@ -132,8 +133,11 @@ python train.py \
   --max_steps 0 \
   --log_every 20 \
   --val_every 1000 \
-  --val_batches 100
+  --val_batches 0
 ```
+
+`--val_batches 0` evaluates the complete validation set. Positive values keep
+the option to cap validation work for smoke tests.
 
 If batch size 8 runs out of memory, retry with 4. If memory usage is comfortably
 below 24 GB, batch size can be increased for a later experiment.
@@ -163,8 +167,12 @@ python train.py \
   --batch_size 8 \
   --num_workers 8 \
   --num_epochs 1 \
-  --resume "$STORE/outputs/libero_goal_epoch1/run_YYYYMMDD_HHMMSS_microseconds/best.pt"
+  --resume "$STORE/outputs/libero_goal_epoch1/run_YYYYMMDD_HHMMSS_microseconds/last.pt"
 ```
 
-Checkpoints contain only trainable ActionDiT parameters and optimizer state.
-Frozen Qwen and DINO weights are reloaded from their original local paths.
+Checkpoints contain the trainable ActionDiT parameters, optimizer state, and
+cosine learning-rate scheduler state. Keep `batch_size`, `num_epochs`,
+`max_steps`, and `min_lr` consistent when resuming so the saved schedule has the
+same length and lower bound. Checkpoints created before scheduler state was
+added cannot accurately resume cosine annealing. Frozen Qwen and DINO weights
+are reloaded from their original local paths.

@@ -135,9 +135,10 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="Stop after this many optimizer steps; 0 means no step limit.",
     )
-    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--min_lr", type=float, default=1e-5)
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--grad_clip", type=float, default=1.0)
     parser.add_argument(
@@ -146,7 +147,12 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--log_every", type=int, default=100)
     parser.add_argument("--val_every", type=int, default=1000)
-    parser.add_argument("--val_batches", type=int, default=100)
+    parser.add_argument(
+        "--val_batches",
+        type=int,
+        default=0,
+        help="Maximum validation batches; 0 evaluates the full validation set.",
+    )
     parser.add_argument("--resume", type=Path)
     parser.add_argument("--seed", type=int, default=16)
     args = parser.parse_args()
@@ -156,13 +162,18 @@ def parse_args() -> argparse.Namespace:
         "batch_size",
         "log_every",
         "val_every",
-        "val_batches",
     )
     for name in positive_names:
         if getattr(args, name) <= 0:
             parser.error(f"--{name} must be positive")
-    if args.max_steps < 0 or args.num_workers < 0:
-        parser.error("--max_steps and --num_workers cannot be negative")
+    if args.max_steps < 0 or args.num_workers < 0 or args.val_batches < 0:
+        parser.error(
+            "--max_steps, --num_workers, and --val_batches cannot be negative"
+        )
+    if args.lr <= 0:
+        parser.error("--lr must be positive")
+    if not 0 <= args.min_lr <= args.lr:
+        parser.error("--min_lr must be between 0 and --lr")
     return args
 
 
@@ -267,12 +278,14 @@ def evaluate(
     amp_dtype: torch.dtype | None,
     max_batches: int,
 ) -> dict[str, float]:
+    if max_batches < 0:
+        raise ValueError("max_batches cannot be negative")
     model.eval()
     totals = {"loss": 0.0, "loss_mse": 0.0, "loss_vb": 0.0}
     count = 0
     with torch.no_grad():
         for batch_index, batch in enumerate(loader):
-            if batch_index >= max_batches:
+            if max_batches and batch_index >= max_batches:
                 break
             _, metrics = compute_loss(
                 model,
@@ -283,11 +296,12 @@ def evaluate(
                 amp_dtype,
                 training=False,
             )
+            batch_size = int(batch["action"].shape[0])
             for key in totals:
-                totals[key] += metrics[key]
-            count += 1
+                totals[key] += metrics[key] * batch_size
+            count += batch_size
     if count == 0:
-        raise RuntimeError("Validation loader produced no batches")
+        raise RuntimeError("Validation loader produced no samples")
     model.train()
     return {key: value / count for key, value in totals.items()}
 
@@ -314,6 +328,7 @@ def save_checkpoint(
     path: Path,
     model: ActionDiT,
     optimizer: torch.optim.Optimizer,
+    scheduler: torch.optim.lr_scheduler.CosineAnnealingLR,
     scaler: torch.amp.GradScaler,
     args: argparse.Namespace,
     epoch: int,
@@ -322,9 +337,10 @@ def save_checkpoint(
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        "format_version": 1,
+        "format_version": 2,
         "model": trainable_state_dict(model),
         "optimizer": optimizer.state_dict(),
+        "scheduler": scheduler.state_dict(),
         "scaler": scaler.state_dict(),
         "epoch": epoch,
         "global_step": global_step,
@@ -335,7 +351,7 @@ def save_checkpoint(
     torch.save(payload, temporary_path)
     temporary_path.replace(path)
     LOGGER.info(
-        "best checkpoint updated: %s (validation loss=%.5f)",
+        "checkpoint saved: %s (best validation loss=%.5f)",
         path,
         best_val_loss,
     )
@@ -345,30 +361,70 @@ def load_checkpoint(
     path: Path,
     model: ActionDiT,
     optimizer: torch.optim.Optimizer,
+    scheduler: torch.optim.lr_scheduler.CosineAnnealingLR,
     scaler: torch.amp.GradScaler,
-) -> tuple[int, int]:
+) -> tuple[int, int, float]:
     checkpoint_path = path.expanduser().resolve()
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-    if checkpoint.get("format_version") != 1:
+    format_version = checkpoint.get("format_version")
+    if format_version not in (1, 2):
         raise ValueError(f"Unsupported checkpoint format: {checkpoint_path}")
+    scheduler_state = checkpoint.get("scheduler")
+    if scheduler_state is None:
+        raise ValueError(
+            "Checkpoint does not contain an LR scheduler state and cannot "
+            f"resume cosine annealing accurately: {checkpoint_path}"
+        )
+    saved_t_max = int(scheduler_state["T_max"])
+    if saved_t_max != scheduler.T_max:
+        raise ValueError(
+            "Checkpoint LR schedule is incompatible with this run: "
+            f"saved T_max={saved_t_max}, current T_max={scheduler.T_max}. "
+            "Keep batch size, num_epochs, and max_steps consistent when resuming."
+        )
+    saved_eta_min = float(scheduler_state["eta_min"])
+    if saved_eta_min != scheduler.eta_min:
+        raise ValueError(
+            "Checkpoint LR schedule is incompatible with this run: "
+            f"saved eta_min={saved_eta_min}, current eta_min={scheduler.eta_min}."
+        )
+    saved_base_lrs = [float(lr) for lr in scheduler_state["base_lrs"]]
+    current_base_lrs = [float(lr) for lr in scheduler.base_lrs]
+    if saved_base_lrs != current_base_lrs:
+        raise ValueError(
+            "Checkpoint LR schedule is incompatible with this run: "
+            f"saved base_lrs={saved_base_lrs}, "
+            f"current base_lrs={current_base_lrs}."
+        )
+    saved_global_step = int(checkpoint["global_step"])
+    saved_scheduler_step = int(scheduler_state["last_epoch"])
+    if saved_scheduler_step != saved_global_step:
+        raise ValueError(
+            "Checkpoint scheduler and optimizer-step counters disagree: "
+            f"scheduler last_epoch={saved_scheduler_step}, "
+            f"global_step={saved_global_step}."
+        )
     incompatible = model.load_state_dict(checkpoint["model"], strict=False)
     if incompatible.unexpected_keys:
         raise ValueError(
             f"Unexpected checkpoint keys: {incompatible.unexpected_keys[:5]}"
         )
+    scheduler.load_state_dict(scheduler_state)
     optimizer.load_state_dict(checkpoint["optimizer"])
     scaler.load_state_dict(checkpoint.get("scaler", {}))
     epoch = int(checkpoint["epoch"])
-    global_step = int(checkpoint["global_step"])
+    global_step = saved_global_step
+    best_val_loss = float(checkpoint["best_val_loss"])
     LOGGER.info(
-        "resumed: %s (epoch=%d, step=%d, "
+        "resumed: %s (epoch=%d, step=%d, lr=%.6e, "
         "frozen keys reloaded from pretrained models=%d)",
         checkpoint_path,
         epoch,
         global_step,
+        scheduler.get_last_lr()[0],
         len(incompatible.missing_keys),
     )
-    return epoch, global_step
+    return epoch, global_step, best_val_loss
 
 
 def make_loader(
@@ -480,11 +536,47 @@ def main(args: argparse.Namespace) -> None:
         val_dataset, args, shuffle=False, generator=generator
     )
 
+    planned_steps = len(train_loader) * args.num_epochs
+    total_steps = (
+        planned_steps
+        if args.max_steps == 0
+        else min(args.max_steps, planned_steps)
+    )
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=total_steps,
+        eta_min=args.min_lr,
+    )
+
     start_epoch = 0
     global_step = 0
+    best_val_loss = float("inf")
     if args.resume is not None:
-        start_epoch, global_step = load_checkpoint(
-            args.resume, model, optimizer, scaler
+        start_epoch, global_step, best_val_loss = load_checkpoint(
+            args.resume,
+            model,
+            optimizer,
+            scheduler,
+            scaler,
+        )
+        if global_step > total_steps:
+            raise ValueError(
+                f"Checkpoint step {global_step} exceeds this run's "
+                f"total_steps={total_steps}"
+            )
+        # Every invocation writes to a new run directory. Preserve the exact
+        # state used to resume even if continued training is interrupted before
+        # the first validation.
+        save_checkpoint(
+            args.output_dir / "last.pt",
+            model,
+            optimizer,
+            scheduler,
+            scaler,
+            args,
+            start_epoch,
+            global_step,
+            best_val_loss,
         )
 
     trainable_count = sum(parameter.numel() for parameter in trainable_parameters)
@@ -499,10 +591,15 @@ def main(args: argparse.Namespace) -> None:
         f"{trainable_count:,}",
         f"{total_count:,}",
     )
+    LOGGER.info(
+        "lr schedule: cosine peak=%.6e min=%.6e total_steps=%d",
+        args.lr,
+        args.min_lr,
+        total_steps,
+    )
 
     writer = SummaryWriter(log_dir=args.output_dir / "tensorboard")
     model.train()
-    best_val_loss = float("inf")
     final_epoch = start_epoch
     stop = False
 
@@ -510,6 +607,9 @@ def main(args: argparse.Namespace) -> None:
         for epoch in range(start_epoch, args.num_epochs):
             final_epoch = epoch
             for batch in train_loader:
+                if global_step >= total_steps:
+                    stop = True
+                    break
                 optimizer.zero_grad(set_to_none=True)
                 loss, metrics = compute_loss(
                     model,
@@ -528,13 +628,14 @@ def main(args: argparse.Namespace) -> None:
                     grad_norm = torch.zeros((), device=device)
                 scaler.step(optimizer)
                 scaler.update()
+                scheduler.step()
                 global_step += 1
 
                 if global_step % args.log_every == 0 or global_step == 1:
                     memory_gb = torch.cuda.max_memory_allocated() / 1024**3
                     LOGGER.info(
                         "epoch=%d step=%d loss=%.5f mse=%.5f vb=%.5f "
-                        "grad=%.4f max_vram_gb=%.2f",
+                        "grad=%.4f max_vram_gb=%.2f lr=%.6e",
                         epoch,
                         global_step,
                         metrics["loss"],
@@ -542,10 +643,16 @@ def main(args: argparse.Namespace) -> None:
                         metrics["loss_vb"],
                         float(grad_norm),
                         memory_gb,
+                        scheduler.get_last_lr()[0],
                     )
                     for key, value in metrics.items():
                         writer.add_scalar(f"train/{key}", value, global_step)
                     writer.add_scalar("train/grad_norm", float(grad_norm), global_step)
+                    writer.add_scalar(
+                        "train/learning_rate",
+                        scheduler.get_last_lr()[0],
+                        global_step,
+                    )
                     writer.add_scalar("system/max_vram_gb", memory_gb, global_step)
 
                 if global_step % args.val_every == 0:
@@ -573,15 +680,27 @@ def main(args: argparse.Namespace) -> None:
                             args.output_dir / "best.pt",
                             model,
                             optimizer,
+                            scheduler,
                             scaler,
                             args,
                             epoch,
                             global_step,
                             best_val_loss,
                         )
+                    save_checkpoint(
+                        args.output_dir / "last.pt",
+                        model,
+                        optimizer,
+                        scheduler,
+                        scaler,
+                        args,
+                        epoch,
+                        global_step,
+                        best_val_loss,
+                    )
                     writer.add_scalar("val/best_loss", best_val_loss, global_step)
 
-                if args.max_steps and global_step >= args.max_steps:
+                if global_step >= total_steps:
                     stop = True
                     break
             if stop:
@@ -609,12 +728,24 @@ def main(args: argparse.Namespace) -> None:
                 args.output_dir / "best.pt",
                 model,
                 optimizer,
+                scheduler,
                 scaler,
                 args,
                 final_epoch,
                 global_step,
                 best_val_loss,
             )
+        save_checkpoint(
+            args.output_dir / "last.pt",
+            model,
+            optimizer,
+            scheduler,
+            scaler,
+            args,
+            final_epoch,
+            global_step,
+            best_val_loss,
+        )
     finally:
         writer.close()
         train_dataset.close()

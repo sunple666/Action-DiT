@@ -771,6 +771,11 @@ class GaussianDiffusion:
                     clip_denoised=False,
                     loss_mask=loss_mask
                 )["output"]
+                terms["vb"] = th.where(
+                    t == 0,
+                    th.zeros_like(terms["vb"]),
+                    terms["vb"],
+                )
                 if self.loss_type == LossType.RESCALED_MSE:
                     # Divide by 1000 for equivalence with initial implementation.
                     # Without a factor of 1/1000, the VB term hurts the MSE term.
