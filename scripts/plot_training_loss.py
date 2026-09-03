@@ -48,8 +48,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--smooth",
         type=int,
-        default=10,
-        help="Trailing moving-average window in logged training points (default: 10).",
+        default=1,
+        help="Moving-average window; 1 disables smoothing (default: 1).",
+    )
+    parser.add_argument(
+        "--include-step-one",
+        action="store_true",
+        help="Include step=1 in the plot (excluded by default).",
     )
     parser.add_argument(
         "--dpi",
@@ -81,7 +86,9 @@ def extract_fields(line: str) -> dict[str, float]:
     return {key.lower(): float(value) for key, value in FIELD_PATTERN.findall(line)}
 
 
-def parse_log(log_path: Path) -> tuple[list[dict[str, float]], list[dict[str, float]]]:
+def parse_log(
+    log_path: Path, *, include_step_one: bool = False
+) -> tuple[list[dict[str, float]], list[dict[str, float]]]:
     train_records: list[dict[str, float]] = []
     val_records: list[dict[str, float]] = []
 
@@ -89,6 +96,8 @@ def parse_log(log_path: Path) -> tuple[list[dict[str, float]], list[dict[str, fl
         for line in handle:
             fields = extract_fields(line)
             if "step" not in fields or "loss" not in fields:
+                continue
+            if not include_step_one and fields["step"] == 1:
                 continue
             if "validation step=" in line:
                 val_records.append(fields)
@@ -130,21 +139,30 @@ def plot_metric(
 ) -> None:
     train_steps, train_values = values(train_records, key)
     if train_values:
-        axis.plot(
-            train_steps,
-            train_values,
-            color=color,
-            alpha=0.18,
-            linewidth=0.8,
-            label=f"train {label} (raw)",
-        )
-        axis.plot(
-            train_steps,
-            moving_average(train_values, smooth),
-            color=color,
-            linewidth=1.8,
-            label=f"train {label} (MA {smooth})",
-        )
+        if smooth == 1:
+            axis.plot(
+                train_steps,
+                train_values,
+                color=color,
+                linewidth=1.2,
+                label=f"train {label}",
+            )
+        else:
+            axis.plot(
+                train_steps,
+                train_values,
+                color=color,
+                alpha=0.18,
+                linewidth=0.8,
+                label=f"train {label} (raw)",
+            )
+            axis.plot(
+                train_steps,
+                moving_average(train_values, smooth),
+                color=color,
+                linewidth=1.8,
+                label=f"train {label} (MA {smooth})",
+            )
 
     val_steps, val_values = values(val_records, key)
     if val_values:
@@ -225,7 +243,9 @@ def main() -> None:
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    train_records, val_records = parse_log(log_path)
+    train_records, val_records = parse_log(
+        log_path, include_step_one=args.include_step_one
+    )
     figure = create_figure(
         train_records=train_records,
         val_records=val_records,
