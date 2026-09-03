@@ -6,6 +6,7 @@ import logging
 import os
 import random
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -36,6 +37,16 @@ HIDDEN_DIM = 256
 LEARN_SIGMA = True
 
 LOGGER = logging.getLogger("actiondit.train")
+
+
+def format_duration(seconds: float) -> str:
+    """Format a duration as DDd HH:MM:SS or HH:MM:SS."""
+    total_seconds = max(0, int(round(seconds)))
+    days, remainder = divmod(total_seconds, 24 * 60 * 60)
+    hours, remainder = divmod(remainder, 60 * 60)
+    minutes, seconds = divmod(remainder, 60)
+    clock = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{days}d {clock}" if days else clock
 
 
 def create_run_directory(output_root: Path) -> Path:
@@ -602,6 +613,23 @@ def main(args: argparse.Namespace) -> None:
     model.train()
     final_epoch = start_epoch
     stop = False
+    invocation_start_step = global_step
+    training_start_time = time.monotonic()
+    LOGGER.info(
+        "training timer started: start_step=%d remaining_steps=%d",
+        invocation_start_step,
+        total_steps - invocation_start_step,
+    )
+
+    def timing_snapshot() -> tuple[float, float]:
+        """Return elapsed time and estimated remaining time."""
+        elapsed_seconds = time.monotonic() - training_start_time
+        completed_steps = global_step - invocation_start_step
+        if completed_steps <= 0:
+            return elapsed_seconds, 0.0
+        average_step_seconds = elapsed_seconds / completed_steps
+        eta_seconds = average_step_seconds * max(total_steps - global_step, 0)
+        return elapsed_seconds, eta_seconds
 
     try:
         for epoch in range(start_epoch, args.num_epochs):
@@ -633,9 +661,11 @@ def main(args: argparse.Namespace) -> None:
 
                 if global_step % args.log_every == 0 or global_step == 1:
                     memory_gb = torch.cuda.max_memory_allocated() / 1024**3
+                    elapsed_seconds, eta_seconds = timing_snapshot()
                     LOGGER.info(
                         "epoch=%d step=%d loss=%.5f mse=%.5f vb=%.5f "
-                        "grad=%.4f max_vram_gb=%.2f lr=%.6e",
+                        "grad=%.4f max_vram_gb=%.2f lr=%.6e "
+                        "elapsed=%s eta=%s",
                         epoch,
                         global_step,
                         metrics["loss"],
@@ -644,6 +674,8 @@ def main(args: argparse.Namespace) -> None:
                         float(grad_norm),
                         memory_gb,
                         scheduler.get_last_lr()[0],
+                        format_duration(elapsed_seconds),
+                        format_duration(eta_seconds),
                     )
                     for key, value in metrics.items():
                         writer.add_scalar(f"train/{key}", value, global_step)
@@ -654,7 +686,12 @@ def main(args: argparse.Namespace) -> None:
                         global_step,
                     )
                     writer.add_scalar("system/max_vram_gb", memory_gb, global_step)
-
+                    writer.add_scalar(
+                        "system/elapsed_hours", elapsed_seconds / 3600, global_step
+                    )
+                    writer.add_scalar(
+                        "system/eta_hours", eta_seconds / 3600, global_step
+                    )
                 if global_step % args.val_every == 0:
                     val_metrics = evaluate(
                         model,
@@ -665,12 +702,16 @@ def main(args: argparse.Namespace) -> None:
                         amp_dtype,
                         args.val_batches,
                     )
+                    elapsed_seconds, eta_seconds = timing_snapshot()
                     LOGGER.info(
-                        "validation step=%d loss=%.5f mse=%.5f vb=%.5f",
+                        "validation step=%d loss=%.5f mse=%.5f vb=%.5f "
+                        "elapsed=%s eta=%s",
                         global_step,
                         val_metrics["loss"],
                         val_metrics["loss_mse"],
                         val_metrics["loss_vb"],
+                        format_duration(elapsed_seconds),
+                        format_duration(eta_seconds),
                     )
                     for key, value in val_metrics.items():
                         writer.add_scalar(f"val/{key}", value, global_step)
@@ -745,6 +786,14 @@ def main(args: argparse.Namespace) -> None:
             final_epoch,
             global_step,
             best_val_loss,
+        )
+        total_elapsed_seconds = time.monotonic() - training_start_time
+        LOGGER.info(
+            "training finished: elapsed=%s optimizer_steps_this_run=%d "
+            "final_step=%d",
+            format_duration(total_elapsed_seconds),
+            global_step - invocation_start_step,
+            global_step,
         )
     finally:
         writer.close()
