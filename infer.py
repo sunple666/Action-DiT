@@ -459,6 +459,31 @@ def create_libero_goal_suite():
     return benchmark_dict["libero_goal"]()
 
 
+def load_libero_init_states(task) -> torch.Tensor:
+    """Load trusted official LIBERO init states with PyTorch 2.6+."""
+    from libero.libero import get_libero_path
+
+    init_states_path = (
+        Path(get_libero_path("init_states"))
+        / task.problem_folder
+        / task.init_states_file
+    )
+    if not init_states_path.is_file():
+        raise FileNotFoundError(
+            f"LIBERO init states do not exist: {init_states_path}"
+        )
+
+    # LIBERO's files contain NumPy objects and predate the PyTorch 2.6 change
+    # that made weights_only=True the default.  These files come from the
+    # trusted official LIBERO repository installed by the user.
+    init_states = torch.load(
+        init_states_path,
+        map_location="cpu",
+        weights_only=False,
+    )
+    return init_states
+
+
 def evaluate_libero_task(
     *,
     task_suite,
@@ -486,7 +511,7 @@ def evaluate_libero_task(
 
     task = task_suite.get_task(task_id)
     instruction = task.language
-    init_states = task_suite.get_task_init_states(task_id)
+    init_states = load_libero_init_states(task)
     if num_episodes > len(init_states):
         raise ValueError(
             f"Task {task_id} has only {len(init_states)} official initial "
