@@ -31,6 +31,7 @@ STATE_DIM = 8
 TIME_DIM = 128
 HIDDEN_DIM = 256
 LEARN_SIGMA = True
+VIDEO_RESOLUTION = 512
 
 
 def default_dino_repo() -> Path:
@@ -568,11 +569,18 @@ def evaluate_libero_task(
                 )
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
                 video_writer = cv2.VideoWriter(
-                    str(video_path), fourcc, 20.0, (128, 128)
+                    str(video_path),
+                    fourcc,
+                    20.0,
+                    (VIDEO_RESOLUTION, VIDEO_RESOLUTION),
                 )
                 if not video_writer.isOpened():
                     raise RuntimeError(f"Could not create video: {video_path}")
-                frame = np.asarray(obs["agentview_image"], dtype=np.uint8)
+                frame = env.env.sim.render(
+                    width=VIDEO_RESOLUTION,
+                    height=VIDEO_RESOLUTION,
+                    camera_name="agentview",
+                )
                 video_writer.write(np.ascontiguousarray(frame[..., ::-1]))
 
             success = bool(env.check_success())
@@ -601,8 +609,10 @@ def evaluate_libero_task(
                     obs, _, done, _ = env.step(action.tolist())
                     steps += 1
                     if video_writer is not None:
-                        frame = np.asarray(
-                            obs["agentview_image"], dtype=np.uint8
+                        frame = env.env.sim.render(
+                            width=VIDEO_RESOLUTION,
+                            height=VIDEO_RESOLUTION,
+                            camera_name="agentview",
                         )
                         video_writer.write(
                             np.ascontiguousarray(frame[..., ::-1])
