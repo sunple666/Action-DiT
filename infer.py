@@ -165,6 +165,12 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Optional path at which to save evaluation results as JSON.",
     )
+    parser.add_argument(
+        "--video_dir",
+        type=Path,
+        default=None,
+        help="Optional directory for one MP4 rollout video per episode.",
+    )
     args = parser.parse_args()
 
     if args.ddim_steps <= 0:
@@ -500,6 +506,7 @@ def evaluate_libero_task(
     execute_horizon: int,
     seed: int,
     render_gpu_device_id: int,
+    video_dir: Path | None,
 ) -> dict:
     """Evaluate one LIBERO Goal task on official fixed initial states."""
     try:
@@ -526,10 +533,23 @@ def evaluate_libero_task(
     )
     env.seed(seed)
 
+    cv2 = None
+    if video_dir is not None:
+        try:
+            import cv2
+        except ImportError as exc:
+            raise ImportError(
+                "Video recording requires OpenCV (cv2)"
+            ) from exc
+        video_dir = video_dir.expanduser().resolve()
+        video_dir.mkdir(parents=True, exist_ok=True)
+
     successes = 0
     episode_steps: list[int] = []
+    video_paths: list[str] = []
     print(f"\ntask {task_id}: {instruction}")
 
+    video_writer = None
     try:
         for episode_id in range(num_episodes):
             env.reset()
@@ -539,6 +559,21 @@ def evaluate_libero_task(
             zero_action = np.zeros(ACTION_DIM, dtype=np.float32)
             for _ in range(wait_steps):
                 obs, _, _, _ = env.step(zero_action)
+
+            video_path = None
+            if video_dir is not None:
+                video_path = (
+                    video_dir
+                    / f"task_{task_id:02d}_episode_{episode_id + 1:03d}.mp4"
+                )
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                video_writer = cv2.VideoWriter(
+                    str(video_path), fourcc, 20.0, (128, 128)
+                )
+                if not video_writer.isOpened():
+                    raise RuntimeError(f"Could not create video: {video_path}")
+                frame = np.asarray(obs["agentview_image"], dtype=np.uint8)
+                video_writer.write(np.ascontiguousarray(frame[..., ::-1]))
 
             success = bool(env.check_success())
             steps = 0
@@ -565,9 +600,22 @@ def evaluate_libero_task(
                 for action in action_chunk:
                     obs, _, done, _ = env.step(action.tolist())
                     steps += 1
+                    if video_writer is not None:
+                        frame = np.asarray(
+                            obs["agentview_image"], dtype=np.uint8
+                        )
+                        video_writer.write(
+                            np.ascontiguousarray(frame[..., ::-1])
+                        )
                     success = bool(done) or bool(env.check_success())
                     if success or steps >= max_steps:
                         break
+
+            if video_writer is not None:
+                video_writer.release()
+                video_writer = None
+                video_paths.append(str(video_path))
+                print(f"  saved video: {video_path}")
 
             successes += int(success)
             episode_steps.append(steps)
@@ -578,6 +626,8 @@ def evaluate_libero_task(
                 f"task success rate={running_rate:.1%}"
             )
     finally:
+        if video_writer is not None:
+            video_writer.release()
         env.close()
 
     return {
@@ -588,6 +638,7 @@ def evaluate_libero_task(
         "successes": successes,
         "success_rate": successes / num_episodes,
         "episode_steps": episode_steps,
+        "video_paths": video_paths,
     }
 
 
@@ -621,6 +672,7 @@ def evaluate_libero_goal(
                 execute_horizon=args.execute_horizon,
                 seed=args.seed,
                 render_gpu_device_id=args.render_gpu_device_id,
+                video_dir=args.video_dir,
             )
         )
 
