@@ -258,7 +258,7 @@ def compute_loss(
     with torch.autocast(
         device_type="cuda", dtype=amp_dtype, enabled=amp_dtype is not None
     ):
-        condition = model.encode_condition(states, observations, texts)
+        condition = model.encode_static_condition(states, observations, texts)
         loss_dict = diffusion.training_losses(
             model=model,
             x_start=normalized_actions,

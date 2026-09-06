@@ -86,6 +86,30 @@ class LanguageEmbedder(nn.Module):
         x=self.mlp(x)
         return x
 
+class ConditionFusion(nn.Module):
+    def __init__(self,hidden_dim):
+        super().__init__()
+        self.timestep_norm=nn.LayerNorm(hidden_dim)
+        self.state_norm=nn.LayerNorm(hidden_dim)
+        self.observation_norm=nn.LayerNorm(hidden_dim)
+        self.language_norm=nn.LayerNorm(hidden_dim)
+
+        self.mlp=nn.Sequential(
+            nn.Linear(in_features=hidden_dim*4,out_features=hidden_dim,bias=True),
+            nn.SiLU(),
+            nn.Linear(in_features=hidden_dim,out_features=hidden_dim,bias=True)
+        )
+    def forward(self,timesteps,static_condition):
+        states,observations,language=torch.unbind(static_condition,dim=1)
+
+        timesteps=self.timestep_norm(timesteps)
+        states=self.state_norm(states)
+        observations=self.observation_norm(observations)
+        language=self.language_norm(language)
+
+        condition=torch.cat([timesteps,states,observations,language],dim=-1)
+        condition=self.mlp(condition)
+        return condition
 
 class FinalLayer(nn.Module):
     def __init__(self,hidden_dim,out_dim):
@@ -174,6 +198,8 @@ class ActionDiT(nn.Module):
             qwen_dim,hidden_dim,qwen_model_path,qwen_dtype
         )
 
+        self.condition_fusion=ConditionFusion(hidden_dim)
+
         self.blocks=nn.ModuleList([
             ActionDiTBlock(hidden_dim=hidden_dim,mlp_hidden_dim=hidden_dim*4,num_heads=8,hidden_size=hidden_dim)
             for _ in range(depth)
@@ -181,25 +207,25 @@ class ActionDiT(nn.Module):
         self.final_layer=FinalLayer(hidden_dim,self.out_dim)
 
     #状态、图像、语言在扩散中不会改变，可以一次计算完毕
-    def encode_condition(self,states,observations,language):
+    def encode_static_condition(self,states,observations,language):
         state_embeddings=self.s_embedder(states)#[B,S]->[B,D]
         observation_embeddings=self.o_embedder(observations)#[B,3,224,224]->[B,384]->[B,D]
         language_embeddings=self.l_embedder(language)#List[B]->[B,1024]->[B,D]
-        condition=state_embeddings+observation_embeddings+language_embeddings
-        return condition
+        static_condition=torch.stack([state_embeddings,observation_embeddings,language_embeddings],dim=1)#[B,3,D]
+        return static_condition
 
     def forward(
             self,
             noisy_actions,#动作[B,H,A]         
             timesteps,#时间步[B]
-            condition,#条件[B,D]
+            condition,#条件[B,3,D]
             action_mask=None):#动作掩码[B,H]
         assert noisy_actions.shape[1]==self.action_chunk
         x=self.x_embedder(noisy_actions)#[B,H,A]->[B,H,D]
         x=x+self.action_pos_embeddings#[B,H,D]+[1,H,D]->[B,H,D]
         timesteps=self.t_embedder(timesteps)#[B]->[B,D]
 
-        condition=timesteps+condition#[B,D]+[B,D]->[B,D]
+        condition=self.condition_fusion(timesteps,condition)#[B,D]
 
         for block in self.blocks:
             x=block(x,condition,action_mask)

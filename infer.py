@@ -390,7 +390,7 @@ def infer_action_chunk(
         dtype=amp_dtype,
         enabled=use_autocast,
     ):
-        condition = model.encode_condition(states, observations, language)
+        condition = model.encode_static_condition(states, observations, language)
         normalized_actions = run_ddim_denoising_loop(
             model=model,
             diffusion=diffusion,
