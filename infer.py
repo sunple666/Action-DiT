@@ -614,6 +614,7 @@ def evaluate_libero_task(
                             height=VIDEO_RESOLUTION,
                             camera_name="agentview",
                         )
+                        frame = np.flipud(frame)
                         video_writer.write(
                             np.ascontiguousarray(frame[..., ::-1])
                         )
