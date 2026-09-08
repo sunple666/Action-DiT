@@ -118,7 +118,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--language",
         default="put the bowl on the plate",
-        help="Dummy instruction used by this first smoke test.",
+        help=(
+            "Dummy instruction for --smoke_test, or the alternative "
+            "instruction for --language_sensitivity_test."
+        ),
+    )
+    parser.add_argument(
+        "--language_sensitivity_test",
+        action="store_true",
+        help=(
+            "Compare the selected task instruction with --language while "
+            "holding the LIBERO observation and diffusion seed fixed."
+        ),
     )
     parser.add_argument(
         "--smoke_test",
@@ -188,6 +199,17 @@ def parse_args() -> argparse.Namespace:
         parser.error(f"--execute_horizon must be in [1, {ACTION_CHUNK}]")
     if args.render_gpu_device_id < 0:
         parser.error("--render_gpu_device_id cannot be negative")
+    if args.language_sensitivity_test:
+        if args.smoke_test:
+            parser.error(
+                "--language_sensitivity_test and --smoke_test are mutually exclusive"
+            )
+        if args.task_id == -1:
+            parser.error(
+                "--language_sensitivity_test requires one concrete --task_id"
+            )
+        if args.eta != 0:
+            parser.error("--language_sensitivity_test requires --eta 0")
     return args
 
 
@@ -489,6 +511,112 @@ def load_libero_init_states(task) -> torch.Tensor:
         weights_only=False,
     )
     return init_states
+
+
+@torch.inference_mode()
+def run_language_sensitivity_test(
+    *,
+    task_suite,
+    task_id: int,
+    alternative_language: str,
+    model: ActionDiT,
+    diffusion,
+    normalizer: ActionNormalizer,
+    device: torch.device,
+    amp_dtype: torch.dtype | None,
+    wait_steps: int,
+    seed: int,
+    render_gpu_device_id: int,
+) -> dict:
+    """Compare language influence against diffusion sampling noise."""
+    try:
+        from libero.libero.envs import OffScreenRenderEnv
+    except ImportError as exc:
+        raise ImportError(
+            "LIBERO environments are unavailable in this Python environment"
+        ) from exc
+
+    task = task_suite.get_task(task_id)
+    reference_language = task.language
+    init_states = load_libero_init_states(task)
+    env = OffScreenRenderEnv(
+        bddl_file_name=task_suite.get_task_bddl_file_path(task_id),
+        camera_heights=128,
+        camera_widths=128,
+        render_gpu_device_id=render_gpu_device_id,
+    )
+    env.seed(seed)
+
+    try:
+        env.reset()
+        obs = env.set_init_state(init_states[0])
+        zero_action = np.zeros(ACTION_DIM, dtype=np.float32)
+        for _ in range(wait_steps):
+            obs, _, _, _ = env.step(zero_action)
+
+        states, observations, _ = libero_observation_to_model_inputs(
+            obs,
+            reference_language,
+            device,
+        )
+
+        # Resetting to the same seed makes infer_action_chunk start from the
+        # exact same Gaussian noise. With eta=0, language is the only change.
+        seed_everything(seed)
+        reference_actions, _ = infer_action_chunk(
+            model=model,
+            diffusion=diffusion,
+            normalizer=normalizer,
+            states=states,
+            observations=observations,
+            language=[reference_language],
+            eta=0.0,
+            amp_dtype=amp_dtype,
+        )
+        seed_everything(seed)
+        alternative_actions, _ = infer_action_chunk(
+            model=model,
+            diffusion=diffusion,
+            normalizer=normalizer,
+            states=states,
+            observations=observations,
+            language=[alternative_language],
+            eta=0.0,
+            amp_dtype=amp_dtype,
+        )
+
+        # This third prediction keeps the correct language but changes the
+        # starting Gaussian noise, providing a scale for the language delta.
+        seed_everything(seed + 10_000)
+        different_noise_actions, _ = infer_action_chunk(
+            model=model,
+            diffusion=diffusion,
+            normalizer=normalizer,
+            states=states,
+            observations=observations,
+            language=[reference_language],
+            eta=0.0,
+            amp_dtype=amp_dtype,
+        )
+    finally:
+        env.close()
+
+    language_difference = (reference_actions - alternative_actions).abs()
+    noise_difference = (reference_actions - different_noise_actions).abs()
+    language_delta = language_difference.mean().item()
+    noise_delta = noise_difference.mean().item()
+
+    return {
+        "task_id": task_id,
+        "reference_language": reference_language,
+        "alternative_language": alternative_language,
+        "seed": seed,
+        "language_delta": language_delta,
+        "noise_delta": noise_delta,
+        "language_to_noise_ratio": language_delta / max(noise_delta, 1e-8),
+        "first_action_language_delta": language_difference[:, 0].mean().item(),
+        "first_action_noise_delta": noise_difference[:, 0].mean().item(),
+    }
 
 
 def evaluate_libero_task(
@@ -803,6 +931,26 @@ def main() -> None:
         learn_sigma=LEARN_SIGMA,
     )
     normalizer = ActionNormalizer.from_stats_file(stats_path).to(device)
+
+    if args.language_sensitivity_test:
+        results = run_language_sensitivity_test(
+            task_suite=create_libero_goal_suite(),
+            task_id=args.task_id,
+            alternative_language=args.language,
+            model=model,
+            diffusion=diffusion,
+            normalizer=normalizer,
+            device=device,
+            amp_dtype=amp_dtype,
+            wait_steps=args.wait_steps,
+            seed=args.seed,
+            render_gpu_device_id=args.render_gpu_device_id,
+        )
+        print("\nLanguage sensitivity results")
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+        if args.results_path is not None:
+            save_results(results, args.results_path)
+        return
 
     if args.smoke_test:
         states, observations, language = make_dummy_inputs(device, args.language)
