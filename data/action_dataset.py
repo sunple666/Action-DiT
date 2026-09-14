@@ -85,7 +85,7 @@ class ActionDataset(Dataset):
                 f"were not found under {self.dataset_root}: {missing_preview}"
             )
 
-        self.index = LiberoSampleIndex(self.episodes)
+        self.index = LiberoSampleIndex(self.episodes,trim_end=1)
         self._open_files: OrderedDict[str, h5py.File] = OrderedDict()
 
     def __len__(self) -> int:
@@ -175,9 +175,10 @@ class ActionDataset(Dataset):
         image = np.asarray(obs["agentview_rgb"][timestep], dtype=np.uint8)
         observation = self._process_image(image)
 
-        action_end = min(timestep + self.action_chunk, episode.length)
+        action_start = timestep + 1
+        action_end = min(action_start + self.action_chunk, episode.length)
         valid_action_array = np.asarray(
-            demo["actions"][timestep:action_end], dtype=np.float32
+            demo["actions"][action_start:action_end], dtype=np.float32
         )
         if valid_action_array.ndim != 2 or valid_action_array.shape[1] != 7:
             raise ValueError(

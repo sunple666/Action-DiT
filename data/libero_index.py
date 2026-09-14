@@ -84,20 +84,25 @@ class SplitManifest:
 
 
 class LiberoSampleIndex:
-    """Map contiguous global sample indices to episode-local timesteps."""
-
-    def __init__(self, episodes: Iterable[EpisodeRef]) -> None:
+    def __init__(
+        self,
+        episodes: Iterable[EpisodeRef],
+        trim_end: int = 0,
+    ) -> None:
         self.episodes = tuple(episodes)
-        self._cumulative_ends: list[int] = []
+        self._cumulative_ends = []
         total = 0
+
         for episode in self.episodes:
-            if episode.length <= 0:
+            usable_length = episode.length - trim_end
+            if usable_length <= 0:
                 raise ValueError(
-                    f"Episode {episode.file}:{episode.demo} has invalid length "
-                    f"{episode.length}"
+                    f"Episode is too short: {episode.file}:{episode.demo}"
                 )
-            total += episode.length
+
+            total += usable_length
             self._cumulative_ends.append(total)
+
         self._length = total
 
     def __len__(self) -> int:

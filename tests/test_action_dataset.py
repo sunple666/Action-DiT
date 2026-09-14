@@ -57,7 +57,7 @@ class ActionDatasetTest(unittest.TestCase):
         first = dataset[0]
         tail = dataset[-1]
 
-        self.assertEqual(len(dataset), 20)
+        self.assertEqual(len(dataset), 19)
         self.assertEqual(first["action"].shape, (16, 7))
         self.assertTrue(first["action_mask"].all())
         self.assertEqual(first["state"].shape, (8,))
@@ -68,7 +68,12 @@ class ActionDatasetTest(unittest.TestCase):
         self.assertEqual(int(tail["action_mask"].sum()), 1)
         self.assertTrue(torch.equal(tail["action"][1:], torch.zeros(15, 7)))
         torch.testing.assert_close(
-            tail["action"][0], torch.arange(133, 140, dtype=torch.float32)
+        first["action"][0],
+        torch.arange(7, 14, dtype=torch.float32),
+        )
+        torch.testing.assert_close(
+        tail["action"][0],
+        torch.arange(133, 140, dtype=torch.float32),
         )
         dataset.close()
 
