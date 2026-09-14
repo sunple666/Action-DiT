@@ -62,14 +62,13 @@ class ObservationEmbedder(nn.Module):
     def __init__(self,dino_dim,hidden_dim,dino_repo,dino_weights):
         super().__init__()
         self.dino=DINOv2Encoder(repo=dino_repo,weights=dino_weights)
-        self.mlp=nn.Sequential(
+        self.proj=nn.Sequential(
+            nn.LayerNorm(dino_dim),
             nn.Linear(in_features=dino_dim,out_features=hidden_dim,bias=True),
-            nn.SiLU(),
-            nn.Linear(in_features=hidden_dim,out_features=hidden_dim,bias=True)
         )
     def forward(self,x):
-        x=self.dino(x)
-        x=self.mlp(x)
+        x=self.dino.forward_patch_tokens(x)#[B,3,224,224]->[B,256,384]
+        x=self.proj(x)#[B,256,384]->[B,256,D]
         return x
 
 class LanguageEmbedder(nn.Module):
@@ -91,23 +90,21 @@ class ConditionFusion(nn.Module):
         super().__init__()
         self.timestep_norm=nn.LayerNorm(hidden_dim)
         self.state_norm=nn.LayerNorm(hidden_dim)
-        self.observation_norm=nn.LayerNorm(hidden_dim)
         self.language_norm=nn.LayerNorm(hidden_dim)
 
         self.mlp=nn.Sequential(
-            nn.Linear(in_features=hidden_dim*4,out_features=hidden_dim,bias=True),
+            nn.Linear(in_features=hidden_dim*3,out_features=hidden_dim,bias=True),
             nn.SiLU(),
             nn.Linear(in_features=hidden_dim,out_features=hidden_dim,bias=True)
         )
     def forward(self,timesteps,static_condition):
-        states,observations,language=torch.unbind(static_condition,dim=1)
+        states,language=torch.unbind(static_condition,dim=1)
 
         timesteps=self.timestep_norm(timesteps)
         states=self.state_norm(states)
-        observations=self.observation_norm(observations)
         language=self.language_norm(language)
 
-        condition=torch.cat([timesteps,states,observations,language],dim=-1)
+        condition=torch.cat([timesteps,states,language],dim=-1)
         condition=self.mlp(condition)
         return condition
 
@@ -133,8 +130,9 @@ class FinalLayer(nn.Module):
         return x
 
 class ActionDiTBlock(nn.Module):
-    def __init__(self,hidden_dim,mlp_hidden_dim,num_heads,hidden_size):
+    def __init__(self,hidden_dim,mlp_hidden_dim,num_heads,hidden_size,use_cross_attention=False):
         super().__init__()
+        self.use_cross_attention=use_cross_attention
         self.norm1=nn.LayerNorm(hidden_dim)
         self.norm2=nn.LayerNorm(hidden_dim)
         self.attn=nn.MultiheadAttention(embed_dim=hidden_dim,num_heads=num_heads,batch_first=True)
@@ -150,12 +148,23 @@ class ActionDiTBlock(nn.Module):
         nn.init.constant_(self.condition_mlp[-1].bias,0)
         nn.init.constant_(self.condition_mlp[-1].weight,0)
 
-    def forward(self,x,c,mask=None):
+        if use_cross_attention:
+            self.norm3=nn.LayerNorm(hidden_dim)
+            self.cross_gate=nn.Parameter(torch.zeros(hidden_dim))
+            self.cross_attn=nn.MultiheadAttention(embed_dim=hidden_dim,num_heads=num_heads,batch_first=True)
+
+    def forward(self,x,c,vision_tokens=None,mask=None):
         key_padding_mask=~mask if mask is not None else None
         attn_gate,mlp_gate,attn_scale,attn_shift,mlp_scale,mlp_shift=self.condition_mlp(c).chunk(6,dim=-1)
+        # 1. Self-Attention
         attn_input=modulate(self.norm1(x),scale=attn_scale,shift=attn_shift)
-        h=x+attn_gate.unsqueeze(1)*self.attn(attn_input,attn_input,attn_input,key_padding_mask=key_padding_mask,need_weights=False)[0]
-        x=h+mlp_gate.unsqueeze(1)*self.mlp(modulate(self.norm2(h),scale=mlp_scale,shift=mlp_shift))
+        x=x+attn_gate.unsqueeze(1)*self.attn(attn_input,attn_input,attn_input,key_padding_mask=key_padding_mask,need_weights=False)[0]
+        # 2. Cross-Attention
+        if self.use_cross_attention:
+            assert vision_tokens is not None
+            x=x+self.cross_gate*self.cross_attn(query=self.norm3(x),key=vision_tokens,value=vision_tokens,need_weights=False)[0]
+        # 3. MLP
+        x=x+mlp_gate.unsqueeze(1)*self.mlp(modulate(self.norm2(x),scale=mlp_scale,shift=mlp_shift))
         return x
 
 class ActionDiT(nn.Module):
@@ -175,6 +184,7 @@ class ActionDiT(nn.Module):
         dino_dim=384,
         qwen_dim=1024,
         action_chunk=16,
+        use_cross_attention=False,
         learn_sigma=True,
         dino_repo="facebookresearch/dinov2",
         dino_weights=None,
@@ -200,9 +210,11 @@ class ActionDiT(nn.Module):
 
         self.condition_fusion=ConditionFusion(hidden_dim)
 
+        self.cross_attention_layers=[1,3,5] if use_cross_attention else []
+
         self.blocks=nn.ModuleList([
-            ActionDiTBlock(hidden_dim=hidden_dim,mlp_hidden_dim=hidden_dim*4,num_heads=8,hidden_size=hidden_dim)
-            for _ in range(depth)
+            ActionDiTBlock(hidden_dim=hidden_dim,mlp_hidden_dim=hidden_dim*4,num_heads=8,hidden_size=hidden_dim,use_cross_attention=(i in self.cross_attention_layers))
+            for i in range(depth)
         ])
         self.final_layer=FinalLayer(hidden_dim,self.out_dim)
 
@@ -211,23 +223,28 @@ class ActionDiT(nn.Module):
         state_embeddings=self.s_embedder(states)#[B,S]->[B,D]
         observation_embeddings=self.o_embedder(observations)#[B,3,224,224]->[B,384]->[B,D]
         language_embeddings=self.l_embedder(language)#List[B]->[B,1024]->[B,D]
-        static_condition=torch.stack([state_embeddings,observation_embeddings,language_embeddings],dim=1)#[B,3,D]
+        static_condition={
+            "state_and_language":torch.stack([state_embeddings,language_embeddings],dim=1),#[B,2,D]
+            "observation":observation_embeddings#[B,256,D]
+            }
         return static_condition
 
     def forward(
             self,
             noisy_actions,#动作[B,H,A]         
             timesteps,#时间步[B]
-            condition,#条件[B,3,D]
+            condition,#条件dict[B,2,D]&[B,D]
             action_mask=None):#动作掩码[B,H]
         assert noisy_actions.shape[1]==self.action_chunk
         x=self.x_embedder(noisy_actions)#[B,H,A]->[B,H,D]
         x=x+self.action_pos_embeddings#[B,H,D]+[1,H,D]->[B,H,D]
         timesteps=self.t_embedder(timesteps)#[B]->[B,D]
+        _condition=condition["state_and_language"]#[B,2,D]
+        visual_tokens=condition["observation"]#[B,256,D] 
 
-        condition=self.condition_fusion(timesteps,condition)#[B,D]
+        _condition=self.condition_fusion(timesteps,_condition)#[B,D]
 
         for block in self.blocks:
-            x=block(x,condition,action_mask)
-        output=self.final_layer(x,condition)
+            x=block(x,_condition,visual_tokens,action_mask)
+        output=self.final_layer(x,_condition)
         return output

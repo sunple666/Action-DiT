@@ -38,3 +38,9 @@ class DINOv2Encoder(nn.Module):
     def forward(self, images):
         with torch.no_grad():
             return self.dino(images)
+
+    def forward_patch_tokens(self,images):
+        with torch.no_grad():
+            features=self.dino.forward_features(images)
+            return features["x_norm_patchtokens"]
+

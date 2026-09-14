@@ -267,6 +267,7 @@ def build_model(
         dino_weights=str(dino_weights),
         qwen_model_path=str(qwen_model_path),
         qwen_dtype=qwen_dtype,
+        use_cross_attention=True
     ).to(device)
 
 

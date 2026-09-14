@@ -509,6 +509,7 @@ def main(args: argparse.Namespace) -> None:
         dino_weights=args.dino_weights,
         qwen_model_path=args.qwen_model_path,
         qwen_dtype=qwen_dtype,
+        use_cross_attention=True,
     ).to(device)
     diffusion = create_diffusion(
         timestep_respacing="",
