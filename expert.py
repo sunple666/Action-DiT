@@ -22,6 +22,7 @@ import argparse
 import json
 import os
 import random
+import xml.etree.ElementTree as ET
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -178,6 +179,60 @@ def get_core_env(env):
     return getattr(env, "env", env)
 
 
+def rewrite_libero_asset_paths(xml_string: str) -> str:
+    """Replace collector-machine LIBERO asset roots with this installation."""
+    import libero.libero as libero_package
+
+    assets_root = Path(libero_package.__file__).resolve().parent / "assets"
+    if not assets_root.is_dir():
+        raise NotADirectoryError(
+            f"Installed LIBERO assets directory does not exist: {assets_root}"
+        )
+
+    root = ET.fromstring(xml_string)
+    markers = (
+        "chiliocosm/assets/",
+        "libero/libero/assets/",
+        "libero/assets/",
+    )
+    replacements = 0
+    unresolved: list[str] = []
+
+    for element in root.iter():
+        old_path = element.get("file")
+        if not old_path:
+            continue
+        normalized = old_path.replace("\\", "/")
+        relative_path = None
+        for marker in markers:
+            marker_index = normalized.rfind(marker)
+            if marker_index >= 0:
+                relative_path = normalized[marker_index + len(marker) :]
+                break
+        if relative_path is None:
+            continue
+
+        candidate = assets_root / Path(relative_path)
+        if candidate.is_file():
+            element.set("file", str(candidate))
+            replacements += 1
+        elif Path(old_path).is_absolute() and not Path(old_path).is_file():
+            unresolved.append(f"{old_path} -> {candidate}")
+
+    if unresolved:
+        preview = "\n".join(unresolved[:5])
+        raise FileNotFoundError(
+            "Could not relocate LIBERO assets referenced by the demonstration "
+            f"XML:\n{preview}"
+        )
+    if replacements:
+        print(
+            f"  relocated {replacements} demonstration XML assets to "
+            f"{assets_root}"
+        )
+    return ET.tostring(root, encoding="unicode")
+
+
 def restore_demo_state(
     env,
     *,
@@ -194,7 +249,11 @@ def restore_demo_state(
         except ImportError as exc:
             raise ImportError("LIBERO XML post-processing is unavailable") from exc
 
+        # LIBERO's helper relocates robosuite assets only. Public demonstration
+        # XML files can also contain absolute paths from the collector machine,
+        # such as /Users/.../chiliocosm/assets/..., so relocate those too.
         processed_xml = postprocess_model_xml(model_xml, {})
+        processed_xml = rewrite_libero_asset_paths(processed_xml)
         core_env.reset_from_xml_string(processed_xml)
         core_env.sim.reset()
 
