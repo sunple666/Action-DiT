@@ -28,6 +28,10 @@ def create_demo_file(path: Path, lengths: list[int]) -> None:
             obs.create_dataset(
                 "agentview_rgb", data=np.zeros((length, 128, 128, 3), dtype=np.uint8)
             )
+            obs.create_dataset(
+                "eye_in_hand_rgb",
+                data=np.zeros((length, 128, 128, 3), dtype=np.uint8),
+            )
             obs.create_dataset("ee_states", data=np.zeros((length, 6)))
             obs.create_dataset("gripper_states", data=np.zeros((length, 2)))
 

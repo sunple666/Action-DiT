@@ -204,6 +204,8 @@ class ActionDiT(nn.Module):
         self.o_embedder=ObservationEmbedder(
             dino_dim,hidden_dim,dino_repo,dino_weights
         )
+        self.camera_embeddings=nn.Parameter(torch.zeros(1,2,1,hidden_dim))
+        nn.init.normal_(self.camera_embeddings,mean=0.0,std=0.02)
         self.l_embedder=LanguageEmbedder(
             qwen_dim,hidden_dim,qwen_model_path,qwen_dtype
         )
@@ -219,13 +221,24 @@ class ActionDiT(nn.Module):
         self.final_layer=FinalLayer(hidden_dim,self.out_dim)
 
     #状态、图像、语言在扩散中不会改变，可以一次计算完毕
-    def encode_static_condition(self,states,observations,language):
+    def encode_static_condition(self,states,agentview_observation,wrist_observation,language):
         state_embeddings=self.s_embedder(states)#[B,S]->[B,D]
-        observation_embeddings=self.o_embedder(observations)#[B,3,224,224]->[B,384]->[B,D]
         language_embeddings=self.l_embedder(language)#List[B]->[B,1024]->[B,D]
+        if agentview_observation.shape != wrist_observation.shape:
+            raise ValueError(
+                "Agent-view and wrist observations must have identical shapes, "
+                f"got {tuple(agentview_observation.shape)} and "
+                f"{tuple(wrist_observation.shape)}"
+            )
+        all_observations=torch.cat([agentview_observation,wrist_observation],dim=0)#[2*B,3,224,224]
+        observation_tokens=self.o_embedder(all_observations)#[2*B,3,224,224]->[2*B,256,D]
+        agentview_tokens, wrist_tokens = torch.chunk(observation_tokens, 2, dim=0)  # [B,256,D], [B,256,D]
+        agentview_observation=agentview_tokens+self.camera_embeddings[:,0]#[B,256,D]+[1,1,D]->[B,256,D]
+        wrist_observation=wrist_tokens+self.camera_embeddings[:,1]#[B,256,D]+[1,1,D]->[B,256,D]
+
         static_condition={
             "state_and_language":torch.stack([state_embeddings,language_embeddings],dim=1),#[B,2,D]
-            "observation":observation_embeddings#[B,256,D]
+            "observation":torch.cat([agentview_observation,wrist_observation],dim=1)#[B,512,D]
             }
         return static_condition
 
@@ -233,14 +246,14 @@ class ActionDiT(nn.Module):
             self,
             noisy_actions,#动作[B,H,A]         
             timesteps,#时间步[B]
-            condition,#条件dict[B,2,D]&[B,D]
+            condition,#条件dict[B,2,D]&[B,512,D]
             action_mask=None):#动作掩码[B,H]
         assert noisy_actions.shape[1]==self.action_chunk
         x=self.x_embedder(noisy_actions)#[B,H,A]->[B,H,D]
         x=x+self.action_pos_embeddings#[B,H,D]+[1,H,D]->[B,H,D]
         timesteps=self.t_embedder(timesteps)#[B]->[B,D]
         _condition=condition["state_and_language"]#[B,2,D]
-        visual_tokens=condition["observation"]#[B,256,D] 
+        visual_tokens=condition["observation"]#[B,512,D]
 
         _condition=self.condition_fusion(timesteps,_condition)#[B,D]
 

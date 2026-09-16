@@ -33,6 +33,11 @@ class ActionDatasetTest(unittest.TestCase):
                 images = np.zeros((length, 128, 128, 3), dtype=np.uint8)
                 images[..., 0] = np.arange(length, dtype=np.uint8)[:, None, None]
                 obs.create_dataset("agentview_rgb", data=images)
+                wrist_images = np.zeros_like(images)
+                wrist_images[..., 1] = np.arange(
+                    length, dtype=np.uint8
+                )[:, None, None]
+                obs.create_dataset("eye_in_hand_rgb", data=wrist_images)
                 ee_states = np.arange(length * 6, dtype=np.float32).reshape(length, 6)
                 obs.create_dataset("ee_states", data=ee_states)
                 obs.create_dataset(
@@ -61,8 +66,10 @@ class ActionDatasetTest(unittest.TestCase):
         self.assertEqual(first["action"].shape, (16, 7))
         self.assertTrue(first["action_mask"].all())
         self.assertEqual(first["state"].shape, (8,))
-        self.assertEqual(first["observation"].shape, (3, 224, 224))
-        self.assertTrue(torch.isfinite(first["observation"]).all())
+        self.assertEqual(first["agentview_observation"].shape, (3, 224, 224))
+        self.assertEqual(first["wrist_observation"].shape, (3, 224, 224))
+        self.assertTrue(torch.isfinite(first["agentview_observation"]).all())
+        self.assertTrue(torch.isfinite(first["wrist_observation"]).all())
         self.assertEqual(first["text"], "test task")
 
         self.assertEqual(int(tail["action_mask"].sum()), 1)

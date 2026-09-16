@@ -139,25 +139,36 @@ class OfflineAlignmentDataset(Dataset):
         file = self.base._get_hdf5_file(episode.file)
         actions = file["data"][episode.demo]["actions"]
 
-        shifted_end = min(timestep + 1 + ACTION_CHUNK, episode.length)
-        shifted_array = np.asarray(
-            actions[timestep + 1 : shifted_end], dtype=np.float32
+        current_end = min(timestep + ACTION_CHUNK, episode.length)
+        current_array = np.asarray(
+            actions[timestep:current_end], dtype=np.float32
         )
-        shifted_length = int(shifted_array.shape[0])
+        current_length = int(current_array.shape[0])
+        current_action = torch.zeros(ACTION_CHUNK, ACTION_DIM, dtype=torch.float32)
+        current_action[:current_length] = torch.from_numpy(current_array)
+        current_mask = torch.zeros(ACTION_CHUNK, dtype=torch.bool)
+        current_mask[:current_length] = True
 
-        shifted_action = torch.zeros(ACTION_CHUNK, ACTION_DIM, dtype=torch.float32)
-        shifted_action[:shifted_length] = torch.from_numpy(shifted_array)
-        shifted_mask = torch.zeros(ACTION_CHUNK, dtype=torch.bool)
-        shifted_mask[:shifted_length] = True
+        next_end = min(timestep + 1 + ACTION_CHUNK, episode.length)
+        next_array = np.asarray(
+            actions[timestep + 1 : next_end], dtype=np.float32
+        )
+        next_length = int(next_array.shape[0])
+
+        next_action = torch.zeros(ACTION_CHUNK, ACTION_DIM, dtype=torch.float32)
+        next_action[:next_length] = torch.from_numpy(next_array)
+        next_mask = torch.zeros(ACTION_CHUNK, dtype=torch.bool)
+        next_mask[:next_length] = True
 
         return {
             "state": sample["state"],
-            "observation": sample["observation"],
+            "agentview_observation": sample["agentview_observation"],
+            "wrist_observation": sample["wrist_observation"],
             "text": sample["text"],
-            "current_action": sample["action"],
-            "current_mask": sample["action_mask"],
-            "next_action": shifted_action,
-            "next_mask": shifted_mask,
+            "current_action": current_action,
+            "current_mask": current_mask,
+            "next_action": next_action,
+            "next_mask": next_mask,
             "dataset_index": dataset_index,
             "timestep": timestep,
             "episode": f"{episode.file}:{episode.demo}",
@@ -390,7 +401,12 @@ def main() -> None:
     try:
         for batch in loader:
             states = batch["state"].to(device, non_blocking=True)
-            observations = batch["observation"].to(device, non_blocking=True)
+            agentview_observations = batch["agentview_observation"].to(
+                device, non_blocking=True
+            )
+            wrist_observations = batch["wrist_observation"].to(
+                device, non_blocking=True
+            )
             texts = list(batch["text"])
 
             predicted_normalized, predicted_raw = infer_action_chunk(
@@ -398,7 +414,8 @@ def main() -> None:
                 diffusion=diffusion,
                 normalizer=normalizer,
                 states=states,
-                observations=observations,
+                agentview_observations=agentview_observations,
+                wrist_observations=wrist_observations,
                 language=texts,
                 eta=0.0,
                 amp_dtype=amp_dtype,

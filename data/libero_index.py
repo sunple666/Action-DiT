@@ -175,6 +175,7 @@ def _scan_file(dataset_root: Path, file_path: Path) -> list[EpisodeRef]:
             obs = demo["obs"]
             required_obs = {
                 "agentview_rgb": (128, 128, 3),
+                "eye_in_hand_rgb": (128, 128, 3),
                 "ee_states": (6,),
                 "gripper_states": (2,),
             }

@@ -362,7 +362,8 @@ def run_ddim_denoising_loop(
 
 def validate_inputs(
     states: torch.Tensor,
-    observations: torch.Tensor,
+    agentview_observations: torch.Tensor,
+    wrist_observations: torch.Tensor,
     language: list[str],
 ) -> None:
     batch_size = states.shape[0]
@@ -372,18 +373,31 @@ def validate_inputs(
         raise ValueError(
             f"Expected states {expected_state_shape}, got {tuple(states.shape)}"
         )
-    if tuple(observations.shape) != expected_observation_shape:
+    if tuple(agentview_observations.shape) != expected_observation_shape:
         raise ValueError(
             "Expected observations "
-            f"{expected_observation_shape}, got {tuple(observations.shape)}"
+            f"{expected_observation_shape}, got {tuple(agentview_observations.shape)}"
+        )
+    if tuple(wrist_observations.shape) != expected_observation_shape:
+        raise ValueError(
+            "Expected wrist observations "
+            f"{expected_observation_shape}, got {tuple(wrist_observations.shape)}"
         )
     if len(language) != batch_size:
         raise ValueError(
             f"Expected {batch_size} language instructions, got {len(language)}"
         )
-    if states.device != observations.device:
-        raise ValueError("states and observations must be on the same device")
-    if not torch.isfinite(states).all() or not torch.isfinite(observations).all():
+    if not (
+        states.device
+        == agentview_observations.device
+        == wrist_observations.device
+    ):
+        raise ValueError("states and both observations must be on the same device")
+    if not (
+        torch.isfinite(states).all()
+        and torch.isfinite(agentview_observations).all()
+        and torch.isfinite(wrist_observations).all()
+    ):
         raise ValueError("Inference inputs contain NaN or Inf")
 
 
@@ -394,13 +408,14 @@ def infer_action_chunk(
     diffusion,
     normalizer: ActionNormalizer,
     states: torch.Tensor,
-    observations: torch.Tensor,
+    agentview_observations: torch.Tensor,
+    wrist_observations: torch.Tensor,
     language: list[str],
     eta: float,
     amp_dtype: torch.dtype | None,
     initial_noise: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    validate_inputs(states, observations, language)
+    validate_inputs(states, agentview_observations, wrist_observations, language)
     batch_size = states.shape[0]
     device = states.device
 
@@ -433,7 +448,7 @@ def infer_action_chunk(
         dtype=amp_dtype,
         enabled=use_autocast,
     ):
-        condition = model.encode_static_condition(states, observations, language)
+        condition = model.encode_static_condition(states, agentview_observations, wrist_observations, language)
         normalized_actions = run_ddim_denoising_loop(
             model=model,
             diffusion=diffusion,
@@ -452,7 +467,7 @@ def libero_observation_to_model_inputs(
     obs: dict,
     instruction: str,
     device: torch.device,
-) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[str]]:
     """Convert one raw LIBERO observation into ActionDiT inputs."""
     try:
         from robosuite.utils import transform_utils as transform_utils
@@ -467,6 +482,7 @@ def libero_observation_to_model_inputs(
         "robot0_eef_quat",
         "robot0_gripper_qpos",
         "agentview_image",
+        "robot0_eye_in_hand_image",
     )
     missing_keys = [key for key in required_keys if key not in obs]
     if missing_keys:
@@ -487,12 +503,15 @@ def libero_observation_to_model_inputs(
 
     # LIBERO's dataset creator stores obs["agentview_image"] directly as
     # agentview_rgb.  Therefore no flip or rotation is applied here.
-    image = np.asarray(obs["agentview_image"], dtype=np.uint8)
-    image_tensor = ActionDataset._process_image(image)
+    agentview_image = np.asarray(obs["agentview_image"], dtype=np.uint8)
+    wrist_image = np.asarray(obs["robot0_eye_in_hand_image"], dtype=np.uint8)
+    agentview_image_tensor = ActionDataset._process_image(agentview_image)
+    wrist_image_tensor = ActionDataset._process_image(wrist_image)
 
     states = torch.from_numpy(state_array).unsqueeze(0).to(device)
-    observations = image_tensor.unsqueeze(0).to(device)
-    return states, observations, [instruction]
+    agentview_observation = agentview_image_tensor.unsqueeze(0).to(device)
+    wrist_observation = wrist_image_tensor.unsqueeze(0).to(device)
+    return states, agentview_observation, wrist_observation, [instruction]
 
 
 def create_libero_goal_suite():
@@ -575,10 +594,12 @@ def run_language_sensitivity_test(
         for _ in range(wait_steps):
             obs, _, _, _ = env.step(zero_action)
 
-        states, observations, _ = libero_observation_to_model_inputs(
-            obs,
-            reference_language,
-            device,
+        states, agentview_observations, wrist_observations, _ = (
+            libero_observation_to_model_inputs(
+                obs,
+                reference_language,
+                device,
+            )
         )
 
         # Resetting to the same seed makes infer_action_chunk start from the
@@ -589,7 +610,8 @@ def run_language_sensitivity_test(
             diffusion=diffusion,
             normalizer=normalizer,
             states=states,
-            observations=observations,
+            agentview_observations=agentview_observations,
+            wrist_observations=wrist_observations,
             language=[reference_language],
             eta=0.0,
             amp_dtype=amp_dtype,
@@ -600,7 +622,8 @@ def run_language_sensitivity_test(
             diffusion=diffusion,
             normalizer=normalizer,
             states=states,
-            observations=observations,
+            agentview_observations=agentview_observations,
+            wrist_observations=wrist_observations,
             language=[alternative_language],
             eta=0.0,
             amp_dtype=amp_dtype,
@@ -614,7 +637,8 @@ def run_language_sensitivity_test(
             diffusion=diffusion,
             normalizer=normalizer,
             states=states,
-            observations=observations,
+            agentview_observations=agentview_observations,
+            wrist_observations=wrist_observations,
             language=[reference_language],
             eta=0.0,
             amp_dtype=amp_dtype,
@@ -750,7 +774,7 @@ def evaluate_libero_task(
             success = bool(env.check_success())
             steps = 0
             while steps < max_steps and not success:
-                states, observations, language = (
+                states, agentview_observations, wrist_observations, language = (
                     libero_observation_to_model_inputs(
                         obs,
                         instruction,
@@ -762,7 +786,8 @@ def evaluate_libero_task(
                     diffusion=diffusion,
                     normalizer=normalizer,
                     states=states,
-                    observations=observations,
+                    agentview_observations=agentview_observations,
+                    wrist_observations=wrist_observations,
                     language=language,
                     eta=eta,
                     amp_dtype=amp_dtype,
@@ -899,13 +924,14 @@ def save_results(results: dict, path: Path) -> None:
 def make_dummy_inputs(
     device: torch.device,
     language: str,
-) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[str]]:
     """Shape-only smoke-test data; these inputs have no task meaning."""
     states = torch.zeros(1, STATE_DIM, dtype=torch.float32, device=device)
-    observations = torch.zeros(
+    agentview_observations = torch.zeros(
         1, 3, 224, 224, dtype=torch.float32, device=device
     )
-    return states, observations, [language]
+    wrist_observations = torch.zeros_like(agentview_observations)
+    return states, agentview_observations, wrist_observations, [language]
 
 
 def check_outputs(
@@ -994,13 +1020,16 @@ def main() -> None:
         return
 
     if args.smoke_test:
-        states, observations, language = make_dummy_inputs(device, args.language)
+        states, agentview_observations, wrist_observations, language = (
+            make_dummy_inputs(device, args.language)
+        )
         normalized_actions, raw_actions = infer_action_chunk(
             model=model,
             diffusion=diffusion,
             normalizer=normalizer,
             states=states,
-            observations=observations,
+            agentview_observations=agentview_observations,
+            wrist_observations=wrist_observations,
             language=language,
             eta=args.eta,
             amp_dtype=amp_dtype,

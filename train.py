@@ -216,7 +216,8 @@ def validate_batch(batch: dict[str, Any]) -> int:
         "action": (batch_size, ACTION_CHUNK, ACTION_DIM),
         "action_mask": (batch_size, ACTION_CHUNK),
         "state": (batch_size, STATE_DIM),
-        "observation": (batch_size, 3, 224, 224),
+        "agentview_observation": (batch_size, 3, 224, 224),
+        "wrist_observation": (batch_size, 3, 224, 224),
     }
     for key, shape in expected.items():
         if tuple(batch[key].shape) != shape:
@@ -244,7 +245,8 @@ def compute_loss(
         device, dtype=torch.bool, non_blocking=True
     )
     states = batch["state"].to(device, non_blocking=True)
-    observations = batch["observation"].to(device, non_blocking=True)
+    agentview_observations = batch["agentview_observation"].to(device, non_blocking=True)
+    wrist_observations = batch["wrist_observation"].to(device, non_blocking=True)
     texts = batch["text"]
     timesteps = torch.randint(
         0,
@@ -258,7 +260,7 @@ def compute_loss(
     with torch.autocast(
         device_type="cuda", dtype=amp_dtype, enabled=amp_dtype is not None
     ):
-        condition = model.encode_static_condition(states, observations, texts)
+        condition = model.encode_static_condition(states, agentview_observations, wrist_observations, texts)
         loss_dict = diffusion.training_losses(
             model=model,
             x_start=normalized_actions,

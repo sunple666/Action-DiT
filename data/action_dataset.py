@@ -172,8 +172,10 @@ class ActionDataset(Dataset):
             )
         state = torch.from_numpy(state_array)
 
-        image = np.asarray(obs["agentview_rgb"][timestep], dtype=np.uint8)
-        observation = self._process_image(image)
+        agentview_image = np.asarray(obs["agentview_rgb"][timestep], dtype=np.uint8)
+        wrist_image=np.asarray(obs["eye_in_hand_rgb"][timestep], dtype=np.uint8)
+        agentview_observation = self._process_image(agentview_image)
+        wrist_observation=self._process_image(wrist_image)
 
         action_start = timestep + 1
         action_end = min(action_start + self.action_chunk, episode.length)
@@ -198,6 +200,7 @@ class ActionDataset(Dataset):
             "action": action,
             "action_mask": action_mask,
             "state": state,
-            "observation": observation,
+            "agentview_observation": agentview_observation,
+            "wrist_observation": wrist_observation,
             "text": episode.instruction,
         }
