@@ -167,6 +167,14 @@ def parse_args() -> argparse.Namespace:
         help="Actions executed from each predicted 16-action chunk.",
     )
     parser.add_argument(
+        "--reuse_episode_noise",
+        action="store_true",
+        help=(
+            "Sample one initial diffusion noise tensor per episode and reuse "
+            "it for every replanning call in that episode. Requires eta=0."
+        ),
+    )
+    parser.add_argument(
         "--render_gpu_device_id",
         type=int,
         default=0,
@@ -197,6 +205,8 @@ def parse_args() -> argparse.Namespace:
         parser.error("--wait_steps cannot be negative")
     if not 1 <= args.execute_horizon <= ACTION_CHUNK:
         parser.error(f"--execute_horizon must be in [1, {ACTION_CHUNK}]")
+    if args.reuse_episode_noise and args.eta != 0:
+        parser.error("--reuse_episode_noise requires --eta 0")
     if args.render_gpu_device_id < 0:
         parser.error("--render_gpu_device_id cannot be negative")
     if args.language_sensitivity_test:
@@ -388,6 +398,7 @@ def infer_action_chunk(
     language: list[str],
     eta: float,
     amp_dtype: torch.dtype | None,
+    initial_noise: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     validate_inputs(states, observations, language)
     batch_size = states.shape[0]
@@ -399,13 +410,22 @@ def infer_action_chunk(
         dtype=torch.bool,
         device=device,
     )
-    x = torch.randn(
-        batch_size,
-        ACTION_CHUNK,
-        ACTION_DIM,
-        device=device,
-        dtype=states.dtype,
-    )
+    expected_noise_shape = (batch_size, ACTION_CHUNK, ACTION_DIM)
+    if initial_noise is None:
+        x = torch.randn(
+            expected_noise_shape,
+            device=device,
+            dtype=states.dtype,
+        )
+    else:
+        if tuple(initial_noise.shape) != expected_noise_shape:
+            raise ValueError(
+                f"Expected initial noise shape {expected_noise_shape}, "
+                f"got {tuple(initial_noise.shape)}"
+            )
+        x = initial_noise.to(device=device, dtype=states.dtype).clone()
+        if not torch.isfinite(x).all():
+            raise ValueError("Initial diffusion noise contains NaN or Inf")
 
     use_autocast = device.type == "cuda" and amp_dtype is not None
     with torch.autocast(
@@ -634,6 +654,7 @@ def evaluate_libero_task(
     max_steps: int,
     wait_steps: int,
     execute_horizon: int,
+    reuse_episode_noise: bool,
     seed: int,
     render_gpu_device_id: int,
     video_dir: Path | None,
@@ -685,6 +706,20 @@ def evaluate_libero_task(
             env.reset()
             obs = env.set_init_state(init_states[episode_id])
 
+            episode_noise = None
+            if reuse_episode_noise:
+                episode_noise_seed = seed + task_id * 10_000 + episode_id
+                noise_generator = torch.Generator(device=device)
+                noise_generator.manual_seed(episode_noise_seed)
+                episode_noise = torch.randn(
+                    1,
+                    ACTION_CHUNK,
+                    ACTION_DIM,
+                    device=device,
+                    dtype=torch.float32,
+                    generator=noise_generator,
+                )
+
             # Let objects settle before asking the policy for an action.
             zero_action = np.zeros(ACTION_DIM, dtype=np.float32)
             for _ in range(wait_steps):
@@ -731,6 +766,7 @@ def evaluate_libero_task(
                     language=language,
                     eta=eta,
                     amp_dtype=amp_dtype,
+                    initial_noise=episode_noise,
                 )
 
                 action_chunk = raw_actions[0, :execute_horizon].cpu().numpy()
@@ -778,6 +814,7 @@ def evaluate_libero_task(
         "successes": successes,
         "success_rate": successes / num_episodes,
         "episode_steps": episode_steps,
+        "reuse_episode_noise": reuse_episode_noise,
         "video_paths": video_paths,
     }
 
@@ -810,6 +847,7 @@ def evaluate_libero_goal(
                 max_steps=args.max_steps,
                 wait_steps=args.wait_steps,
                 execute_horizon=args.execute_horizon,
+                reuse_episode_noise=args.reuse_episode_noise,
                 seed=args.seed,
                 render_gpu_device_id=args.render_gpu_device_id,
                 video_dir=args.video_dir,
@@ -825,6 +863,7 @@ def evaluate_libero_goal(
         "ddim_steps": args.ddim_steps,
         "eta": args.eta,
         "execute_horizon": args.execute_horizon,
+        "reuse_episode_noise": args.reuse_episode_noise,
         "total_episodes": total_episodes,
         "total_successes": total_successes,
         "total_success_rate": total_success_rate,
@@ -911,6 +950,7 @@ def main() -> None:
     print(f"device: {device}")
     print(f"checkpoint: {checkpoint_path}")
     print(f"DDIM steps: {args.ddim_steps}, eta: {args.eta}")
+    print(f"reuse episode noise: {args.reuse_episode_noise}")
 
     model = build_model(
         device=device,
