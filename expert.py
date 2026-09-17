@@ -8,8 +8,8 @@ For each selected HDF5 demonstration it:
 3. checks task success;
 4. compares the replayed simulator state after ``actions[t]`` with
    ``states[t + 1]``; and
-5. compares the observation returned after ``actions[t]`` with the saved
-   ``obs[t]``.
+5. compares observations before and after ``actions[t]`` with saved
+   ``obs[t]`` and ``obs[t + 1]`` for both agent-view and wrist cameras.
 
 The last comparison is especially important for ActionDiT: if saved ``obs[t]``
 matches the post-action observation, then pairing it with ``actions[t]`` for
@@ -281,7 +281,7 @@ def saved_observation_errors(
     saved_obs,
     index: int,
 ) -> dict[str, float]:
-    """Compare a post-step environment observation to saved processed data."""
+    """Compare one environment observation with one saved observation index."""
     from robosuite.utils import transform_utils
 
     errors: dict[str, float] = {}
@@ -289,10 +289,40 @@ def saved_observation_errors(
     if "agentview_rgb" in saved_obs and "agentview_image" in obs:
         replayed = np.asarray(obs["agentview_image"], dtype=np.float32)
         saved = np.asarray(saved_obs["agentview_rgb"][index], dtype=np.float32)
-        if replayed.shape == saved.shape:
-            errors["image_mae_0_to_1"] = float(
-                np.mean(np.abs(replayed - saved)) / 255.0
+        if replayed.shape != saved.shape:
+            raise ValueError(
+                "Agent-view replay and dataset images have different shapes: "
+                f"{replayed.shape} vs {saved.shape}"
             )
+        error = float(np.mean(np.abs(replayed - saved)) / 255.0)
+        # Keep the original key for compatibility with existing results.
+        errors["image_mae_0_to_1"] = error
+        errors["agentview_image_mae_0_to_1"] = error
+
+    if "eye_in_hand_rgb" in saved_obs and "robot0_eye_in_hand_image" in obs:
+        replayed = np.asarray(
+            obs["robot0_eye_in_hand_image"], dtype=np.float32
+        )
+        saved = np.asarray(
+            saved_obs["eye_in_hand_rgb"][index], dtype=np.float32
+        )
+        if replayed.shape != saved.shape:
+            raise ValueError(
+                "Wrist replay and dataset images have different shapes: "
+                f"{replayed.shape} vs {saved.shape}"
+            )
+        errors["wrist_image_mae_0_to_1"] = float(
+            np.mean(np.abs(replayed - saved)) / 255.0
+        )
+        errors["wrist_image_flipud_mae_0_to_1"] = float(
+            np.mean(np.abs(np.flip(replayed, axis=0) - saved)) / 255.0
+        )
+        errors["wrist_image_fliplr_mae_0_to_1"] = float(
+            np.mean(np.abs(np.flip(replayed, axis=1) - saved)) / 255.0
+        )
+        errors["wrist_image_flip_both_mae_0_to_1"] = float(
+            np.mean(np.abs(np.flip(replayed, axis=(0, 1)) - saved)) / 255.0
+        )
 
     if "ee_states" in saved_obs:
         eef_pos = np.asarray(obs["robot0_eef_pos"], dtype=np.float32)
@@ -317,6 +347,44 @@ def saved_observation_errors(
         )
 
     return errors
+
+
+def collect_errors(
+    collected: dict[str, list[float]],
+    errors: dict[str, float],
+) -> None:
+    for key, value in errors.items():
+        collected.setdefault(key, []).append(value)
+
+
+def summarize_errors(
+    collected: dict[str, list[float]],
+) -> dict[str, dict[str, float | int | None]]:
+    return {key: summarize(values) for key, values in collected.items()}
+
+
+def preferred_observation_alignment(
+    *,
+    pre_action: dict[str, dict[str, float | int | None]],
+    post_action_same_index: dict[str, dict[str, float | int | None]],
+    post_action_next_index: dict[str, dict[str, float | int | None]],
+    metric: str,
+) -> str | None:
+    candidates = {
+        "pre_action_vs_obs_t": pre_action.get(metric, {}).get("mean"),
+        "post_action_vs_obs_t": post_action_same_index.get(metric, {}).get(
+            "mean"
+        ),
+        "post_action_vs_obs_t_plus_1": post_action_next_index.get(
+            metric, {}
+        ).get("mean"),
+    }
+    available = {
+        name: value for name, value in candidates.items() if value is not None
+    }
+    if not available:
+        return None
+    return min(available, key=available.get)
 
 
 def summarize(values: list[float]) -> dict[str, float | int | None]:
@@ -387,6 +455,13 @@ def replay_episode(
             initial_state=states[0],
             model_xml=model_xml,
         )
+        if "eye_in_hand_rgb" not in demo["obs"]:
+            raise KeyError(f"{episode.demo} lacks obs/eye_in_hand_rgb")
+        if "robot0_eye_in_hand_image" not in obs_before_action:
+            raise KeyError(
+                "Replay environment observation lacks "
+                "robot0_eye_in_hand_image"
+            )
         restored_state = current_flattened_state(env)
         if restored_state.shape != states[0].shape:
             raise ValueError(
@@ -409,33 +484,21 @@ def replay_episode(
         limit = len(actions) if max_steps == 0 else min(max_steps, len(actions))
         state_l2_errors: list[float] = []
         state_max_abs_errors: list[float] = []
-        pre_image_errors: list[float] = []
-        pre_ee_errors: list[float] = []
-        pre_gripper_errors: list[float] = []
-        image_errors: list[float] = []
-        ee_errors: list[float] = []
-        gripper_errors: list[float] = []
+        pre_observation_errors: dict[str, list[float]] = {}
+        post_observation_same_index_errors: dict[str, list[float]] = {}
+        post_observation_next_index_errors: dict[str, list[float]] = {}
         first_success_step: int | None = None
         final_reward = 0.0
         final_done = False
 
         try:
             for step in range(limit):
-                pre_observation_errors = saved_observation_errors(
+                pre_errors = saved_observation_errors(
                     obs_before_action,
                     demo["obs"],
                     step,
                 )
-                if "image_mae_0_to_1" in pre_observation_errors:
-                    pre_image_errors.append(
-                        pre_observation_errors["image_mae_0_to_1"]
-                    )
-                if "ee_l2" in pre_observation_errors:
-                    pre_ee_errors.append(pre_observation_errors["ee_l2"])
-                if "gripper_l2" in pre_observation_errors:
-                    pre_gripper_errors.append(
-                        pre_observation_errors["gripper_l2"]
-                    )
+                collect_errors(pre_observation_errors, pre_errors)
 
                 obs, reward, done, _ = env.step(actions[step].tolist())
                 final_reward = float(reward)
@@ -465,17 +528,25 @@ def replay_episode(
                     state_l2_errors.append(float(np.linalg.norm(difference)))
                     state_max_abs_errors.append(float(np.max(np.abs(difference))))
 
-                observation_errors = saved_observation_errors(
+                same_index_errors = saved_observation_errors(
                     obs,
                     demo["obs"],
                     step,
                 )
-                if "image_mae_0_to_1" in observation_errors:
-                    image_errors.append(observation_errors["image_mae_0_to_1"])
-                if "ee_l2" in observation_errors:
-                    ee_errors.append(observation_errors["ee_l2"])
-                if "gripper_l2" in observation_errors:
-                    gripper_errors.append(observation_errors["gripper_l2"])
+                collect_errors(
+                    post_observation_same_index_errors,
+                    same_index_errors,
+                )
+                if step + 1 < len(actions):
+                    next_index_errors = saved_observation_errors(
+                        obs,
+                        demo["obs"],
+                        step + 1,
+                    )
+                    collect_errors(
+                        post_observation_next_index_errors,
+                        next_index_errors,
+                    )
                 obs_before_action = obs
         finally:
             if writer is not None:
@@ -485,6 +556,13 @@ def replay_episode(
         error > state_tolerance for error in state_l2_errors
     )
     success = first_success_step is not None or bool(env.check_success())
+    pre_action_summary = summarize_errors(pre_observation_errors)
+    post_action_same_index_summary = summarize_errors(
+        post_observation_same_index_errors
+    )
+    post_action_next_index_summary = summarize_errors(
+        post_observation_next_index_errors
+    )
     return {
         "episode": asdict(episode),
         "task_id": task_id,
@@ -498,15 +576,22 @@ def replay_episode(
         "state_transition_max_abs": summarize(state_max_abs_errors),
         "state_tolerance": state_tolerance,
         "divergent_state_transitions": divergent_states,
-        "pre_action_observation": {
-            "image_mae_0_to_1": summarize(pre_image_errors),
-            "ee_l2": summarize(pre_ee_errors),
-            "gripper_l2": summarize(pre_gripper_errors),
-        },
-        "post_action_observation": {
-            "image_mae_0_to_1": summarize(image_errors),
-            "ee_l2": summarize(ee_errors),
-            "gripper_l2": summarize(gripper_errors),
+        "pre_action_observation": pre_action_summary,
+        "post_action_observation": post_action_same_index_summary,
+        "post_action_next_observation": post_action_next_index_summary,
+        "observation_alignment_preference": {
+            "agentview": preferred_observation_alignment(
+                pre_action=pre_action_summary,
+                post_action_same_index=post_action_same_index_summary,
+                post_action_next_index=post_action_next_index_summary,
+                metric="agentview_image_mae_0_to_1",
+            ),
+            "wrist": preferred_observation_alignment(
+                pre_action=pre_action_summary,
+                post_action_same_index=post_action_same_index_summary,
+                post_action_next_index=post_action_next_index_summary,
+                metric="wrist_image_mae_0_to_1",
+            ),
         },
         "video_path": str(video_path) if video_path is not None else None,
     }
@@ -605,12 +690,27 @@ def main() -> None:
                 image_mean = result["post_action_observation"][
                     "image_mae_0_to_1"
                 ]["mean"]
+                next_image_mean = result["post_action_next_observation"].get(
+                    "image_mae_0_to_1", {}
+                ).get("mean")
+                pre_wrist_mean = result["pre_action_observation"].get(
+                    "wrist_image_mae_0_to_1", {}
+                ).get("mean")
+                wrist_mean = result["post_action_observation"].get(
+                    "wrist_image_mae_0_to_1", {}
+                ).get("mean")
+                next_wrist_mean = result["post_action_next_observation"].get(
+                    "wrist_image_mae_0_to_1", {}
+                ).get("mean")
                 print(
                     f"  {episode.demo}: success={result['success']} "
                     f"steps={result['actions_executed']} "
                     f"state_l2_mean={state_mean!r} "
-                    f"image_mae_pre={pre_image_mean!r} "
-                    f"image_mae_post={image_mean!r} "
+                    f"agent_mae_pre/t/t+1="
+                    f"{pre_image_mean!r}/{image_mean!r}/{next_image_mean!r} "
+                    f"wrist_mae_pre/t/t+1="
+                    f"{pre_wrist_mean!r}/{wrist_mean!r}/{next_wrist_mean!r} "
+                    f"preferred={result['observation_alignment_preference']} "
                     f"diverged={result['divergent_state_transitions']}"
                 )
         finally:
@@ -649,10 +749,18 @@ def main() -> None:
                 "transition errors, diagnose environment/XML/controller setup."
             ),
             "observation_alignment": (
-                "Compare pre_action_observation with post_action_observation. "
-                "Whichever has much smaller errors identifies when saved obs[t] "
-                "was collected. If post-action is smaller, pairing obs[t] with "
-                "action[t] leaks the result of that action into policy input."
+                "Compare pre_action_observation, post_action_observation "
+                "(against obs[t]), and post_action_next_observation (against "
+                "obs[t+1]). observation_alignment_preference reports the "
+                "lowest direct image MAE separately for agent-view and wrist."
+            ),
+            "wrist_orientation": (
+                "For each timing candidate, compare wrist_image_mae_0_to_1 "
+                "with wrist_image_flipud_mae_0_to_1, "
+                "wrist_image_fliplr_mae_0_to_1, and "
+                "wrist_image_flip_both_mae_0_to_1. A flipped metric being "
+                "substantially lower than the direct metric indicates an "
+                "orientation mismatch."
             ),
         },
     }
