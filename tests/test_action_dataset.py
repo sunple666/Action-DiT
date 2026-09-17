@@ -65,8 +65,6 @@ class ActionDatasetTest(unittest.TestCase):
         self.assertEqual(len(dataset), 19)
         self.assertEqual(first["action"].shape, (16, 7))
         self.assertTrue(first["action_mask"].all())
-        self.assertEqual(first["action_transition_mask"].shape, (16,))
-        self.assertEqual(first["action_post_transition_mask"].shape, (16,))
         self.assertEqual(first["state"].shape, (8,))
         self.assertEqual(first["agentview_observation"].shape, (3, 224, 224))
         self.assertEqual(first["wrist_observation"].shape, (3, 224, 224))
@@ -83,55 +81,6 @@ class ActionDatasetTest(unittest.TestCase):
         torch.testing.assert_close(
         tail["action"][0],
         torch.arange(133, 140, dtype=torch.float32),
-        )
-        dataset.close()
-
-    def test_transition_masks_and_sampling_weights(self) -> None:
-        file_path = self.root / self.relative_file
-        with h5py.File(file_path, "r+") as file:
-            actions = file["data/demo_0/actions"]
-            actions[:, -1] = 1.0
-            actions[0:2, -1] = -1.0
-
-        dataset = ActionDataset(
-            self.root,
-            self.manifest_path,
-            "train",
-            post_transition_steps=2,
-        )
-        sample = dataset[0]
-        expected_transition = torch.zeros(16, dtype=torch.bool)
-        expected_transition[1] = True
-        expected_post = torch.zeros(16, dtype=torch.bool)
-        expected_post[2:4] = True
-        self.assertTrue(
-            torch.equal(sample["action_transition_mask"], expected_transition)
-        )
-        self.assertTrue(
-            torch.equal(sample["action_post_transition_mask"], expected_post)
-        )
-
-        post_sample = dataset[2]
-        expected_post_at_chunk_start = torch.zeros(16, dtype=torch.bool)
-        expected_post_at_chunk_start[:2] = True
-        self.assertFalse(post_sample["action_transition_mask"].any())
-        self.assertTrue(
-            torch.equal(
-                post_sample["action_post_transition_mask"],
-                expected_post_at_chunk_start,
-            )
-        )
-
-        weights, near_count = dataset.transition_sampling_weights(
-            transition_window=1,
-            oversample_factor=4.0,
-        )
-        self.assertEqual(near_count, 3)
-        torch.testing.assert_close(
-            weights[:3], torch.full((3,), 4.0, dtype=torch.double)
-        )
-        torch.testing.assert_close(
-            weights[3:], torch.ones(16, dtype=torch.double)
         )
         dataset.close()
 

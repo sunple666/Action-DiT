@@ -34,7 +34,6 @@ class ActionDataset(Dataset):
         manifest_path: str | Path,
         split: SplitName,
         action_chunk: int = 16,
-        post_transition_steps: int = 4,
         max_open_files: int = 8,
     ) -> None:
         super().__init__()
@@ -57,11 +56,6 @@ class ActionDataset(Dataset):
             raise ValueError(
                 f"action_chunk must be a positive integer, got {action_chunk!r}"
             )
-        if not isinstance(post_transition_steps, int) or post_transition_steps < 0:
-            raise ValueError(
-                "post_transition_steps must be a non-negative integer, "
-                f"got {post_transition_steps!r}"
-            )
         if not isinstance(max_open_files, int) or max_open_files <= 0:
             raise ValueError(
                 "max_open_files must be a positive integer, "
@@ -70,7 +64,6 @@ class ActionDataset(Dataset):
 
         self.split = split
         self.action_chunk = action_chunk
-        self.post_transition_steps = post_transition_steps
         self.max_open_files = max_open_files
 
         manifest = SplitManifest.load(self.manifest_path)
@@ -134,60 +127,6 @@ class ActionDataset(Dataset):
         state = self.__dict__.copy()
         state["_open_files"] = OrderedDict()
         return state
-
-    def transition_sampling_weights(
-        self,
-        *,
-        transition_window: int,
-        oversample_factor: float,
-    ) -> tuple[torch.Tensor, int]:
-        """Return per-observation weights near gripper-command transitions.
-
-        Dataset item ``t`` predicts ``action[t + 1]``.  An item is considered
-        transition-near when that first target action is within
-        ``transition_window`` actions of a gripper sign change.  The returned
-        tensor is suitable for ``WeightedRandomSampler``.
-        """
-        if not isinstance(transition_window, int) or transition_window < 0:
-            raise ValueError("transition_window must be a non-negative integer")
-        if not np.isfinite(oversample_factor) or oversample_factor < 1.0:
-            raise ValueError("oversample_factor must be finite and at least 1")
-
-        weights = torch.ones(len(self), dtype=torch.double)
-        near_count = 0
-        dataset_start = 0
-        for episode in self.episodes:
-            file = self._get_hdf5_file(episode.file)
-            actions = np.asarray(
-                file["data"][episode.demo]["actions"], dtype=np.float32
-            )
-            signs = actions[:, -1] >= 0.0
-            transitions = np.flatnonzero(signs[1:] != signs[:-1]) + 1
-            target_indices = np.arange(1, episode.length)
-            if transitions.size:
-                distances = np.abs(
-                    target_indices[:, None] - transitions[None, :]
-                )
-                near_transition = distances.min(axis=1) <= transition_window
-            else:
-                near_transition = np.zeros(
-                    episode.length - 1, dtype=np.bool_
-                )
-
-            episode_length = episode.length - 1
-            episode_weights = weights[
-                dataset_start : dataset_start + episode_length
-            ]
-            episode_weights[torch.from_numpy(near_transition)] = oversample_factor
-            near_count += int(near_transition.sum())
-            dataset_start += episode_length
-
-        if dataset_start != len(self):
-            raise RuntimeError(
-                f"Built {dataset_start} sampling weights for dataset of "
-                f"length {len(self)}"
-            )
-        return weights, near_count
 
     @staticmethod
     def _process_image(image: np.ndarray) -> torch.Tensor:
@@ -257,45 +196,9 @@ class ActionDataset(Dataset):
         action_mask = torch.zeros(self.action_chunk, dtype=torch.bool)
         action_mask[:valid_length] = True
 
-        transition_mask = torch.zeros(self.action_chunk, dtype=torch.bool)
-        post_transition_mask = torch.zeros(self.action_chunk, dtype=torch.bool)
-        if valid_length:
-            history_start = max(
-                0,
-                action_start - self.post_transition_steps - 1,
-            )
-            gripper_history = np.asarray(
-                demo["actions"][history_start:action_end, -1],
-                dtype=np.float32,
-            )
-            history_positive = gripper_history >= 0.0
-            transition_indices = (
-                np.flatnonzero(history_positive[1:] != history_positive[:-1])
-                + history_start
-                + 1
-            )
-            for transition_index in transition_indices.tolist():
-                relative_transition = transition_index - action_start
-                if 0 <= relative_transition < valid_length:
-                    transition_mask[relative_transition] = True
-
-                if self.post_transition_steps:
-                    post_start = max(transition_index + 1, action_start)
-                    post_end = min(
-                        transition_index + 1 + self.post_transition_steps,
-                        action_end,
-                    )
-                    if post_start < post_end:
-                        post_transition_mask[
-                            post_start - action_start : post_end - action_start
-                        ] = True
-            post_transition_mask &= ~transition_mask
-
         return {
             "action": action,
             "action_mask": action_mask,
-            "action_transition_mask": transition_mask,
-            "action_post_transition_mask": post_transition_mask,
             "state": state,
             "agentview_observation": agentview_observation,
             "wrist_observation": wrist_observation,
