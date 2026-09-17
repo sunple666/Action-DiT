@@ -249,6 +249,50 @@ def masked_metrics(
     )
     raw_per_dim = (raw_error * expanded_mask).sum(dim=(0, 1)) / valid_steps
 
+    valid_samples_by_horizon = mask.sum(dim=0)
+    safe_horizon_counts = valid_samples_by_horizon.clamp_min(1)
+    normalized_mae_by_horizon = (
+        (normalized_error * expanded_mask).sum(dim=(0, 2))
+        / (safe_horizon_counts * normalized_error.shape[-1])
+    )
+    normalized_mae_per_dim_by_horizon = (
+        (normalized_error * expanded_mask).sum(dim=0)
+        / safe_horizon_counts.unsqueeze(-1)
+    )
+    raw_mae_per_dim_by_horizon = (
+        (raw_error * expanded_mask).sum(dim=0)
+        / safe_horizon_counts.unsqueeze(-1)
+    )
+    gripper_sign_matches = (
+        (predicted_raw[..., -1] >= 0) == (target_raw[..., -1] >= 0)
+    )
+    gripper_sign_accuracy_by_horizon = (
+        (gripper_sign_matches & mask).sum(dim=0) / safe_horizon_counts
+    )
+
+    def optional_horizon_values(values: torch.Tensor) -> list[float | None]:
+        return [
+            float(value) if int(count) > 0 else None
+            for value, count in zip(values.tolist(), valid_samples_by_horizon)
+        ]
+
+    normalized_mae_by_quarter: dict[str, float | None] = {}
+    for start in range(0, normalized_error.shape[1], 4):
+        end = min(start + 4, normalized_error.shape[1])
+        quarter_mask = expanded_mask[:, start:end]
+        quarter_steps = int(mask[:, start:end].sum().item())
+        label = f"actions_{start + 1}_to_{end}"
+        normalized_mae_by_quarter[label] = (
+            float(
+                (
+                    (normalized_error[:, start:end] * quarter_mask).sum()
+                    / (quarter_steps * normalized_error.shape[-1])
+                ).item()
+            )
+            if quarter_steps
+            else None
+        )
+
     first_normalized = normalized_error[:, 0].mean(dim=0)
     first_raw = raw_error[:, 0].mean(dim=0)
     predicted_gripper_open = predicted_raw[:, 0, -1] >= 0
@@ -275,6 +319,26 @@ def masked_metrics(
         },
         "first_action_gripper_sign_accuracy": float(
             (predicted_gripper_open == target_gripper_open).float().mean().item()
+        ),
+        "valid_samples_by_horizon": [
+            int(value) for value in valid_samples_by_horizon.tolist()
+        ],
+        "normalized_mae_by_horizon": optional_horizon_values(
+            normalized_mae_by_horizon
+        ),
+        "normalized_mae_by_quarter": normalized_mae_by_quarter,
+        "normalized_mae_per_dim_by_horizon": {
+            name: optional_horizon_values(
+                normalized_mae_per_dim_by_horizon[:, index]
+            )
+            for index, name in enumerate(ACTION_NAMES)
+        },
+        "raw_mae_per_dim_by_horizon": {
+            name: optional_horizon_values(raw_mae_per_dim_by_horizon[:, index])
+            for index, name in enumerate(ACTION_NAMES)
+        },
+        "gripper_sign_accuracy_by_horizon": optional_horizon_values(
+            gripper_sign_accuracy_by_horizon
         ),
         "valid_action_steps": valid_steps,
     }
@@ -521,6 +585,28 @@ def main() -> None:
         "  prediction saturation fraction:    "
         f"{overall['prediction_saturation_fraction']:.2%}"
     )
+    next_alignment = overall["next_alignment"]
+    print("\nNext-target error by predicted action position")
+    for position, (mae, count, gripper_accuracy) in enumerate(
+        zip(
+            next_alignment["normalized_mae_by_horizon"],
+            next_alignment["valid_samples_by_horizon"],
+            next_alignment["gripper_sign_accuracy_by_horizon"],
+        ),
+        start=1,
+    ):
+        mae_text = "n/a" if mae is None else f"{mae:.6f}"
+        gripper_text = (
+            "n/a" if gripper_accuracy is None else f"{gripper_accuracy:.1%}"
+        )
+        print(
+            f"  action {position:02d}: MAE={mae_text} "
+            f"gripper={gripper_text} samples={count}"
+        )
+    print("  quarter summary:")
+    for label, mae in next_alignment["normalized_mae_by_quarter"].items():
+        mae_text = "n/a" if mae is None else f"{mae:.6f}"
+        print(f"    {label}: {mae_text}")
     print(f"saved results: {results_path}")
 
 
