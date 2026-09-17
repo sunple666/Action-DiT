@@ -24,6 +24,21 @@ def mean_flat(tensor,mask=None):
         return (tensor*mask).sum(dim=list(range(1,len(tensor.shape))))/(mask.sum(dim=list(range(1,len(tensor.shape))))+1e-8)/tensor.shape[-1]
 
 
+def weighted_mean_flat(tensor, weight):
+    """Take a normalized weighted mean over all non-batch dimensions."""
+    if tensor.shape != weight.shape:
+        raise ValueError(
+            f"weight shape {weight.shape} must match tensor shape {tensor.shape}"
+        )
+    if not th.isfinite(weight).all() or (weight < 0).any():
+        raise ValueError("weights must be finite and non-negative")
+    dimensions = list(range(1, len(tensor.shape)))
+    denominator = weight.sum(dim=dimensions)
+    if (denominator <= 0).any():
+        raise ValueError("every sample must have positive total weight")
+    return (tensor * weight).sum(dim=dimensions) / denominator
+
+
 class ModelMeanType(enum.Enum):
     """
     Which type of output the model predicts.
@@ -717,7 +732,16 @@ class GaussianDiffusion:
         output = th.where((t == 0), decoder_nll, kl)
         return {"output": output, "pred_xstart": out["pred_xstart"]}
 
-    def training_losses(self, model, x_start, t, model_kwargs=None, noise=None,loss_mask=None):
+    def training_losses(
+        self,
+        model,
+        x_start,
+        t,
+        model_kwargs=None,
+        noise=None,
+        loss_mask=None,
+        mse_weight=None,
+    ):
         """
         Compute training losses for a single timestep.
         :param model: the model to evaluate loss on.
@@ -731,6 +755,11 @@ class GaussianDiffusion:
         """
         if model_kwargs is None:
             model_kwargs = {}
+        if mse_weight is not None and mse_weight.shape != x_start.shape:
+            raise ValueError(
+                f"mse_weight shape {mse_weight.shape} must match "
+                f"x_start shape {x_start.shape}"
+            )
         if noise is None:
             noise = th.randn_like(x_start)
         x_t = self.q_sample(x_start, t, noise=noise)
@@ -738,6 +767,8 @@ class GaussianDiffusion:
         terms = {}
 
         if self.loss_type == LossType.KL or self.loss_type == LossType.RESCALED_KL:
+            if mse_weight is not None:
+                raise ValueError("mse_weight is only supported for MSE losses")
             terms["loss"] = self._vb_terms_bpd(
                 model=model,
                 x_start=x_start,
@@ -789,7 +820,16 @@ class GaussianDiffusion:
                 ModelMeanType.EPSILON: noise,
             }[self.model_mean_type]
             assert model_output.shape == target.shape == x_start.shape
-            terms["mse"] = mean_flat((target - model_output) ** 2,mask=loss_mask)
+            squared_error = (target - model_output) ** 2
+            terms["mse_unweighted"] = mean_flat(
+                squared_error, mask=loss_mask
+            )
+            if mse_weight is None:
+                terms["mse"] = terms["mse_unweighted"]
+            else:
+                terms["mse"] = weighted_mean_flat(
+                    squared_error, mse_weight
+                )
             if "vb" in terms:
                 terms["loss"] = terms["mse"] + terms["vb"]
             else:

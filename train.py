@@ -7,6 +7,7 @@ import os
 import random
 import sys
 import time
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -20,7 +21,7 @@ RUNTIME_STORAGE_ROOT = Path(
 import numpy as np
 import torch
 from torch.nn.utils import clip_grad_norm_
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.utils.tensorboard import SummaryWriter
 
 from actiondit.action_dit import ActionDiT
@@ -37,6 +38,15 @@ HIDDEN_DIM = 256
 LEARN_SIGMA = True
 
 LOGGER = logging.getLogger("actiondit.train")
+
+
+@dataclass(frozen=True)
+class LossWeightConfig:
+    enabled: bool
+    transition: float
+    post_transition: float
+    gripper: float
+    first_action: float
 
 
 def format_duration(seconds: float) -> str:
@@ -156,6 +166,19 @@ def parse_args() -> argparse.Namespace:
         "--precision", choices=("fp32", "bf16", "fp16"), default="bf16"
     )
 
+    parser.add_argument(
+        "--disable_transition_aware_training",
+        action="store_true",
+        help="Use the original uniform sampler and diffusion MSE.",
+    )
+    parser.add_argument("--transition_window", type=int, default=8)
+    parser.add_argument("--transition_oversample_factor", type=float, default=4.0)
+    parser.add_argument("--transition_loss_weight", type=float, default=4.0)
+    parser.add_argument("--post_transition_steps", type=int, default=4)
+    parser.add_argument("--post_transition_loss_weight", type=float, default=2.0)
+    parser.add_argument("--gripper_loss_weight", type=float, default=2.0)
+    parser.add_argument("--first_action_loss_weight", type=float, default=1.5)
+
     parser.add_argument("--log_every", type=int, default=100)
     parser.add_argument("--val_every", type=int, default=1000)
     parser.add_argument(
@@ -185,6 +208,21 @@ def parse_args() -> argparse.Namespace:
         parser.error("--lr must be positive")
     if not 0 <= args.min_lr <= args.lr:
         parser.error("--min_lr must be between 0 and --lr")
+    if args.transition_window < 0 or args.post_transition_steps < 0:
+        parser.error(
+            "--transition_window and --post_transition_steps cannot be negative"
+        )
+    weight_names = (
+        "transition_oversample_factor",
+        "transition_loss_weight",
+        "post_transition_loss_weight",
+        "gripper_loss_weight",
+        "first_action_loss_weight",
+    )
+    for name in weight_names:
+        value = getattr(args, name)
+        if not np.isfinite(value) or value < 1.0:
+            parser.error(f"--{name} must be finite and at least 1")
     return args
 
 
@@ -215,6 +253,8 @@ def validate_batch(batch: dict[str, Any]) -> int:
     expected = {
         "action": (batch_size, ACTION_CHUNK, ACTION_DIM),
         "action_mask": (batch_size, ACTION_CHUNK),
+        "action_transition_mask": (batch_size, ACTION_CHUNK),
+        "action_post_transition_mask": (batch_size, ACTION_CHUNK),
         "state": (batch_size, STATE_DIM),
         "agentview_observation": (batch_size, 3, 224, 224),
         "wrist_observation": (batch_size, 3, 224, 224),
@@ -226,7 +266,52 @@ def validate_batch(batch: dict[str, Any]) -> int:
         raise ValueError("Text batch size does not match tensor batch size")
     if not batch["action_mask"].any(dim=1).all().item():
         raise ValueError("A sample contains no valid actions")
+    if (batch["action_transition_mask"] & ~batch["action_mask"]).any().item():
+        raise ValueError("Transition mask marks a padded action")
+    if (batch["action_post_transition_mask"] & ~batch["action_mask"]).any().item():
+        raise ValueError("Post-transition mask marks a padded action")
+    if (
+        batch["action_transition_mask"]
+        & batch["action_post_transition_mask"]
+    ).any().item():
+        raise ValueError("Transition and post-transition masks overlap")
     return batch_size
+
+
+def build_mse_weight(
+    batch: dict[str, Any],
+    action_mask: torch.Tensor,
+    config: LossWeightConfig,
+    device: torch.device,
+) -> torch.Tensor | None:
+    """Build normalized element weights for transition-aware diffusion MSE."""
+    if not config.enabled:
+        return None
+
+    transition_mask = batch["action_transition_mask"].to(
+        device, dtype=torch.bool, non_blocking=True
+    )
+    post_transition_mask = batch["action_post_transition_mask"].to(
+        device, dtype=torch.bool, non_blocking=True
+    )
+    weights = torch.ones(
+        (*action_mask.shape, ACTION_DIM),
+        device=device,
+        dtype=torch.float32,
+    )
+    weights[:, 0] *= config.first_action
+    weights[..., -1] *= config.gripper
+    weights = torch.where(
+        transition_mask.unsqueeze(-1),
+        weights * config.transition,
+        weights,
+    )
+    weights = torch.where(
+        post_transition_mask.unsqueeze(-1),
+        weights * config.post_transition,
+        weights,
+    )
+    return weights * action_mask.unsqueeze(-1)
 
 
 def compute_loss(
@@ -236,6 +321,7 @@ def compute_loss(
     batch: dict[str, Any],
     device: torch.device,
     amp_dtype: torch.dtype | None,
+    loss_weight_config: LossWeightConfig,
     *,
     training: bool,
 ) -> tuple[torch.Tensor, dict[str, float]]:
@@ -256,11 +342,22 @@ def compute_loss(
         dtype=torch.long,
     )
     normalized_actions = normalizer.normalize(raw_actions, clamp=not training)
+    mse_weight = build_mse_weight(
+        batch,
+        action_mask,
+        loss_weight_config,
+        device,
+    )
 
     with torch.autocast(
         device_type="cuda", dtype=amp_dtype, enabled=amp_dtype is not None
     ):
-        condition = model.encode_static_condition(states, agentview_observations, wrist_observations, texts)
+        condition = model.encode_static_condition(
+            states,
+            agentview_observations,
+            wrist_observations,
+            texts,
+        )
         loss_dict = diffusion.training_losses(
             model=model,
             x_start=normalized_actions,
@@ -270,6 +367,7 @@ def compute_loss(
                 "action_mask": action_mask,
             },
             loss_mask=action_mask,
+            mse_weight=mse_weight,
         )
         loss = loss_dict["loss"].mean()
 
@@ -277,6 +375,17 @@ def compute_loss(
     metrics = {
         "loss": float(loss.detach()),
         "loss_mse": float(loss_dict["mse"].mean().detach()),
+        "loss_mse_unweighted": float(
+            loss_dict["mse_unweighted"].mean().detach()
+        ),
+        "loss_unweighted": float(
+            (
+                loss_dict["mse_unweighted"]
+                + loss_dict.get("vb", zero)
+            )
+            .mean()
+            .detach()
+        ),
         "loss_vb": float(loss_dict.get("vb", zero).mean().detach()),
     }
     return loss, metrics
@@ -290,11 +399,18 @@ def evaluate(
     device: torch.device,
     amp_dtype: torch.dtype | None,
     max_batches: int,
+    loss_weight_config: LossWeightConfig,
 ) -> dict[str, float]:
     if max_batches < 0:
         raise ValueError("max_batches cannot be negative")
     model.eval()
-    totals = {"loss": 0.0, "loss_mse": 0.0, "loss_vb": 0.0}
+    totals = {
+        "loss": 0.0,
+        "loss_mse": 0.0,
+        "loss_mse_unweighted": 0.0,
+        "loss_unweighted": 0.0,
+        "loss_vb": 0.0,
+    }
     count = 0
     with torch.no_grad():
         for batch_index, batch in enumerate(loader):
@@ -307,6 +423,7 @@ def evaluate(
                 batch,
                 device,
                 amp_dtype,
+                loss_weight_config,
                 training=False,
             )
             batch_size = int(batch["action"].shape[0])
@@ -446,11 +563,25 @@ def make_loader(
     *,
     shuffle: bool,
     generator: torch.Generator,
+    sampling_weights: torch.Tensor | None = None,
 ) -> DataLoader:
+    if sampling_weights is not None and shuffle:
+        raise ValueError("shuffle and sampling_weights cannot both be enabled")
+    sampler = None
+    if sampling_weights is not None:
+        if sampling_weights.shape != (len(dataset),):
+            raise ValueError("sampling_weights length does not match dataset")
+        sampler = WeightedRandomSampler(
+            sampling_weights,
+            num_samples=len(dataset),
+            replacement=True,
+            generator=generator,
+        )
     return DataLoader(
         dataset,
         batch_size=args.batch_size,
-        shuffle=shuffle,
+        shuffle=shuffle if sampler is None else False,
+        sampler=sampler,
         num_workers=args.num_workers,
         drop_last=False,
         persistent_workers=args.num_workers > 0,
@@ -529,22 +660,55 @@ def main(args: argparse.Namespace) -> None:
     )
     scaler = torch.amp.GradScaler("cuda", enabled=args.precision == "fp16")
     normalizer = ActionNormalizer.from_stats_file(args.stats_path).to(device)
+    transition_aware = not args.disable_transition_aware_training
+    loss_weight_config = LossWeightConfig(
+        enabled=transition_aware,
+        transition=args.transition_loss_weight,
+        post_transition=args.post_transition_loss_weight,
+        gripper=args.gripper_loss_weight,
+        first_action=args.first_action_loss_weight,
+    )
 
     train_dataset = ActionDataset(
         args.dataset_root,
         args.manifest_path,
         "train",
         action_chunk=ACTION_CHUNK,
+        post_transition_steps=args.post_transition_steps,
     )
     val_dataset = ActionDataset(
         args.dataset_root,
         args.manifest_path,
         "val",
         action_chunk=ACTION_CHUNK,
+        post_transition_steps=args.post_transition_steps,
     )
     generator = torch.Generator().manual_seed(args.seed)
+    train_sampling_weights = None
+    transition_near_count = 0
+    expected_transition_fraction = 0.0
+    if transition_aware:
+        train_sampling_weights, transition_near_count = (
+            train_dataset.transition_sampling_weights(
+                transition_window=args.transition_window,
+                oversample_factor=args.transition_oversample_factor,
+            )
+        )
+        # Do not let HDF5 handles opened while building the sampler survive
+        # into forked DataLoader workers.
+        train_dataset.close()
+        weighted_near = (
+            transition_near_count * args.transition_oversample_factor
+        )
+        expected_transition_fraction = weighted_near / float(
+            train_sampling_weights.sum().item()
+        )
     train_loader = make_loader(
-        train_dataset, args, shuffle=True, generator=generator
+        train_dataset,
+        args,
+        shuffle=not transition_aware,
+        generator=generator,
+        sampling_weights=train_sampling_weights,
     )
     val_loader = make_loader(
         val_dataset, args, shuffle=False, generator=generator
@@ -600,6 +764,27 @@ def main(args: argparse.Namespace) -> None:
     LOGGER.info(
         "train samples: %d, val samples: %d", len(train_dataset), len(val_dataset)
     )
+    if transition_aware:
+        LOGGER.info(
+            "transition-aware training: near_samples=%d/%d window=%d "
+            "oversample=%.2fx expected_sampled_fraction=%.2f%%",
+            transition_near_count,
+            len(train_dataset),
+            args.transition_window,
+            args.transition_oversample_factor,
+            expected_transition_fraction * 100.0,
+        )
+        LOGGER.info(
+            "loss weights: transition=%.2fx post_%d=%.2fx "
+            "gripper=%.2fx first_action=%.2fx",
+            args.transition_loss_weight,
+            args.post_transition_steps,
+            args.post_transition_loss_weight,
+            args.gripper_loss_weight,
+            args.first_action_loss_weight,
+        )
+    else:
+        LOGGER.info("transition-aware training: disabled")
     LOGGER.info(
         "parameters: trainable=%s, total=%s",
         f"{trainable_count:,}",
@@ -649,6 +834,7 @@ def main(args: argparse.Namespace) -> None:
                     batch,
                     device,
                     amp_dtype,
+                    loss_weight_config,
                     training=True,
                 )
                 scaler.scale(loss).backward()
@@ -666,13 +852,15 @@ def main(args: argparse.Namespace) -> None:
                     memory_gb = torch.cuda.max_memory_allocated() / 1024**3
                     elapsed_seconds, eta_seconds = timing_snapshot()
                     LOGGER.info(
-                        "epoch=%d step=%d loss=%.5f mse=%.5f vb=%.5f "
+                        "epoch=%d step=%d loss=%.5f mse=%.5f "
+                        "mse_unweighted=%.5f vb=%.5f "
                         "grad=%.4f max_vram_gb=%.2f lr=%.6e "
                         "elapsed=%s eta=%s",
                         epoch,
                         global_step,
                         metrics["loss"],
                         metrics["loss_mse"],
+                        metrics["loss_mse_unweighted"],
                         metrics["loss_vb"],
                         float(grad_norm),
                         memory_gb,
@@ -704,14 +892,17 @@ def main(args: argparse.Namespace) -> None:
                         device,
                         amp_dtype,
                         args.val_batches,
+                        loss_weight_config,
                     )
                     elapsed_seconds, eta_seconds = timing_snapshot()
                     LOGGER.info(
-                        "validation step=%d loss=%.5f mse=%.5f vb=%.5f "
+                        "validation step=%d loss=%.5f mse=%.5f "
+                        "mse_unweighted=%.5f vb=%.5f "
                         "elapsed=%s eta=%s",
                         global_step,
                         val_metrics["loss"],
                         val_metrics["loss_mse"],
+                        val_metrics["loss_mse_unweighted"],
                         val_metrics["loss_vb"],
                         format_duration(elapsed_seconds),
                         format_duration(eta_seconds),
@@ -758,13 +949,15 @@ def main(args: argparse.Namespace) -> None:
             device,
             amp_dtype,
             args.val_batches,
+            loss_weight_config,
         )
         for key, value in final_val_metrics.items():
             writer.add_scalar(f"val_final/{key}", value, global_step)
         LOGGER.info(
-            "final validation step=%d loss=%.5f",
+            "final validation step=%d loss=%.5f mse_unweighted=%.5f",
             global_step,
             final_val_metrics["loss"],
+            final_val_metrics["loss_mse_unweighted"],
         )
         if final_val_metrics["loss"] < best_val_loss:
             best_val_loss = final_val_metrics["loss"]
