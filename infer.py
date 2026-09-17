@@ -167,6 +167,16 @@ def parse_args() -> argparse.Namespace:
         help="Actions executed from each predicted 16-action chunk.",
     )
     parser.add_argument(
+        "--num_action_samples",
+        type=int,
+        default=1,
+        help=(
+            "Independent DDIM action chunks sampled per observation. For values "
+            "greater than one, the six continuous dimensions are averaged and "
+            "the gripper uses majority voting."
+        ),
+    )
+    parser.add_argument(
         "--reuse_episode_noise",
         action="store_true",
         help=(
@@ -205,8 +215,15 @@ def parse_args() -> argparse.Namespace:
         parser.error("--wait_steps cannot be negative")
     if not 1 <= args.execute_horizon <= ACTION_CHUNK:
         parser.error(f"--execute_horizon must be in [1, {ACTION_CHUNK}]")
+    if args.num_action_samples <= 0:
+        parser.error("--num_action_samples must be positive")
     if args.reuse_episode_noise and args.eta != 0:
         parser.error("--reuse_episode_noise requires --eta 0")
+    if args.reuse_episode_noise and args.num_action_samples != 1:
+        parser.error(
+            "--reuse_episode_noise cannot be combined with "
+            "--num_action_samples greater than 1"
+        )
     if args.render_gpu_device_id < 0:
         parser.error("--render_gpu_device_id cannot be negative")
     if args.language_sensitivity_test:
@@ -220,6 +237,10 @@ def parse_args() -> argparse.Namespace:
             )
         if args.eta != 0:
             parser.error("--language_sensitivity_test requires --eta 0")
+        if args.num_action_samples != 1:
+            parser.error(
+                "--language_sensitivity_test requires --num_action_samples 1"
+            )
     return args
 
 
@@ -463,6 +484,95 @@ def infer_action_chunk(
     return normalized_actions, raw_actions
 
 
+@torch.inference_mode()
+def infer_action_ensemble(
+    *,
+    model: ActionDiT,
+    diffusion,
+    normalizer: ActionNormalizer,
+    states: torch.Tensor,
+    agentview_observations: torch.Tensor,
+    wrist_observations: torch.Tensor,
+    language: list[str],
+    eta: float,
+    amp_dtype: torch.dtype | None,
+    num_action_samples: int,
+    initial_noise: torch.Tensor | None = None,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Sample action chunks in parallel and aggregate in normalized space."""
+    if num_action_samples <= 0:
+        raise ValueError("num_action_samples must be positive")
+    if num_action_samples == 1:
+        return infer_action_chunk(
+            model=model,
+            diffusion=diffusion,
+            normalizer=normalizer,
+            states=states,
+            agentview_observations=agentview_observations,
+            wrist_observations=wrist_observations,
+            language=language,
+            eta=eta,
+            amp_dtype=amp_dtype,
+            initial_noise=initial_noise,
+        )
+    if initial_noise is not None:
+        raise ValueError(
+            "Explicit/reused initial noise is not supported with action "
+            "ensembling; use independent noise for every sample"
+        )
+
+    validate_inputs(
+        states,
+        agentview_observations,
+        wrist_observations,
+        language,
+    )
+    batch_size = states.shape[0]
+    repeated_states = states.repeat_interleave(num_action_samples, dim=0)
+    repeated_agentview = agentview_observations.repeat_interleave(
+        num_action_samples, dim=0
+    )
+    repeated_wrist = wrist_observations.repeat_interleave(
+        num_action_samples, dim=0
+    )
+    repeated_language = [
+        instruction
+        for instruction in language
+        for _ in range(num_action_samples)
+    ]
+
+    sampled_normalized, _ = infer_action_chunk(
+        model=model,
+        diffusion=diffusion,
+        normalizer=normalizer,
+        states=repeated_states,
+        agentview_observations=repeated_agentview,
+        wrist_observations=repeated_wrist,
+        language=repeated_language,
+        eta=eta,
+        amp_dtype=amp_dtype,
+    )
+    sampled_normalized = sampled_normalized.reshape(
+        batch_size,
+        num_action_samples,
+        ACTION_CHUNK,
+        ACTION_DIM,
+    )
+    ensemble_normalized = sampled_normalized.mean(dim=1)
+
+    gripper_samples = sampled_normalized[..., -1]
+    positive_fraction = (gripper_samples >= 0).float().mean(dim=1)
+    majority_gripper = torch.where(
+        positive_fraction >= 0.5,
+        torch.ones_like(positive_fraction),
+        -torch.ones_like(positive_fraction),
+    )
+    ensemble_normalized[..., -1] = majority_gripper
+    ensemble_normalized = ensemble_normalized.clamp(-1, 1)
+    ensemble_raw = normalizer.denormalize(ensemble_normalized)
+    return ensemble_normalized, ensemble_raw
+
+
 def libero_observation_to_model_inputs(
     obs: dict,
     instruction: str,
@@ -678,6 +788,7 @@ def evaluate_libero_task(
     max_steps: int,
     wait_steps: int,
     execute_horizon: int,
+    num_action_samples: int,
     reuse_episode_noise: bool,
     seed: int,
     render_gpu_device_id: int,
@@ -781,7 +892,7 @@ def evaluate_libero_task(
                         device,
                     )
                 )
-                _, raw_actions = infer_action_chunk(
+                _, raw_actions = infer_action_ensemble(
                     model=model,
                     diffusion=diffusion,
                     normalizer=normalizer,
@@ -791,6 +902,7 @@ def evaluate_libero_task(
                     language=language,
                     eta=eta,
                     amp_dtype=amp_dtype,
+                    num_action_samples=num_action_samples,
                     initial_noise=episode_noise,
                 )
 
@@ -839,6 +951,7 @@ def evaluate_libero_task(
         "successes": successes,
         "success_rate": successes / num_episodes,
         "episode_steps": episode_steps,
+        "num_action_samples": num_action_samples,
         "reuse_episode_noise": reuse_episode_noise,
         "video_paths": video_paths,
     }
@@ -872,6 +985,7 @@ def evaluate_libero_goal(
                 max_steps=args.max_steps,
                 wait_steps=args.wait_steps,
                 execute_horizon=args.execute_horizon,
+                num_action_samples=args.num_action_samples,
                 reuse_episode_noise=args.reuse_episode_noise,
                 seed=args.seed,
                 render_gpu_device_id=args.render_gpu_device_id,
@@ -888,6 +1002,7 @@ def evaluate_libero_goal(
         "ddim_steps": args.ddim_steps,
         "eta": args.eta,
         "execute_horizon": args.execute_horizon,
+        "num_action_samples": args.num_action_samples,
         "reuse_episode_noise": args.reuse_episode_noise,
         "total_episodes": total_episodes,
         "total_successes": total_successes,
@@ -976,6 +1091,7 @@ def main() -> None:
     print(f"device: {device}")
     print(f"checkpoint: {checkpoint_path}")
     print(f"DDIM steps: {args.ddim_steps}, eta: {args.eta}")
+    print(f"action samples per observation: {args.num_action_samples}")
     print(f"reuse episode noise: {args.reuse_episode_noise}")
 
     model = build_model(
@@ -1023,7 +1139,7 @@ def main() -> None:
         states, agentview_observations, wrist_observations, language = (
             make_dummy_inputs(device, args.language)
         )
-        normalized_actions, raw_actions = infer_action_chunk(
+        normalized_actions, raw_actions = infer_action_ensemble(
             model=model,
             diffusion=diffusion,
             normalizer=normalizer,
@@ -1033,6 +1149,7 @@ def main() -> None:
             language=language,
             eta=args.eta,
             amp_dtype=amp_dtype,
+            num_action_samples=args.num_action_samples,
         )
         check_outputs(normalized_actions, raw_actions)
 
