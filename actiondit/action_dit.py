@@ -62,13 +62,26 @@ class ObservationEmbedder(nn.Module):
     def __init__(self,dino_dim,hidden_dim,dino_repo,dino_weights):
         super().__init__()
         self.dino=DINOv2Encoder(repo=dino_repo,weights=dino_weights)
-        self.proj=nn.Sequential(
+        self.agent_proj=nn.Sequential(
             nn.LayerNorm(dino_dim),
             nn.Linear(in_features=dino_dim,out_features=hidden_dim,bias=True),
+            nn.GELU(),
+            nn.Linear(in_features=hidden_dim,out_features=hidden_dim,bias=True),
+            nn.LayerNorm(hidden_dim)
+        )
+        self.wrist_proj=nn.Sequential(
+            nn.LayerNorm(dino_dim),
+            nn.Linear(in_features=dino_dim,out_features=hidden_dim,bias=True),
+            nn.GELU(),
+            nn.Linear(in_features=hidden_dim,out_features=hidden_dim,bias=True),
+            nn.LayerNorm(hidden_dim)
         )
     def forward(self,x):
-        x=self.dino.forward_patch_tokens(x)#[B,3,224,224]->[B,256,384]
-        x=self.proj(x)#[B,256,384]->[B,256,D]
+        x=self.dino.forward_patch_tokens(x)#[2B,3,224,224]->[2B,256,384]
+        agent_embeddings, wrist_embeddings=torch.chunk(x,2,dim=0)#[B,256,384],[B,256,384]
+        agent_embeddings=self.agent_proj(agent_embeddings)#[B,256,384]->[B,256,D]
+        wrist_embeddings=self.wrist_proj(wrist_embeddings)#[B,256,384]->[B,256,D]
+        x=torch.cat([agent_embeddings,wrist_embeddings],dim=0)#[2B,256,D]
         return x
 
 class LanguageEmbedder(nn.Module):
@@ -150,8 +163,15 @@ class ActionDiTBlock(nn.Module):
 
         if use_cross_attention:
             self.norm3=nn.LayerNorm(hidden_dim)
-            self.cross_gate=nn.Parameter(torch.zeros(hidden_dim))
-            self.cross_attn=nn.MultiheadAttention(embed_dim=hidden_dim,num_heads=num_heads,batch_first=True)
+            self.norm4=nn.LayerNorm(hidden_dim)
+            self.attn_mlp=nn.Sequential(
+                nn.SiLU(),
+                nn.Linear(in_features=hidden_size,out_features=hidden_size*2,bias=True)
+            )
+            nn.init.constant_(self.attn_mlp[-1].bias,0)
+            nn.init.constant_(self.attn_mlp[-1].weight,0)
+            self.agent_cross_attn=nn.MultiheadAttention(embed_dim=hidden_dim,num_heads=num_heads,batch_first=True)
+            self.wrist_cross_attn=nn.MultiheadAttention(embed_dim=hidden_dim,num_heads=num_heads,batch_first=True)
 
     def forward(self,x,c,vision_tokens=None,mask=None):
         key_padding_mask=~mask if mask is not None else None
@@ -162,7 +182,21 @@ class ActionDiTBlock(nn.Module):
         # 2. Cross-Attention
         if self.use_cross_attention:
             assert vision_tokens is not None
-            x=x+self.cross_gate*self.cross_attn(query=self.norm3(x),key=vision_tokens,value=vision_tokens,need_weights=False)[0]
+            agent_gate,wrist_gate=self.attn_mlp(c).chunk(2,dim=-1)
+            agentview_tokens, wrist_tokens = torch.chunk(vision_tokens, 2, dim=1)  # [B,256,D], [B,256,D]
+            agentview_features=self.agent_cross_attn(
+                query=self.norm3(x),
+                key=agentview_tokens,
+                value=agentview_tokens,
+                need_weights=False
+            )[0]
+            wrist_features=self.wrist_cross_attn(
+                query=self.norm4(x),
+                key=wrist_tokens,
+                value=wrist_tokens,
+                need_weights=False
+            )[0]
+            x=x+agent_gate.unsqueeze(1)*agentview_features+wrist_gate.unsqueeze(1)*wrist_features
         # 3. MLP
         x=x+mlp_gate.unsqueeze(1)*self.mlp(modulate(self.norm2(x),scale=mlp_scale,shift=mlp_shift))
         return x
