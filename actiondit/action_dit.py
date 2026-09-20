@@ -59,9 +59,9 @@ class StateEmbedder(nn.Module):
         return x
 
 class ObservationEmbedder(nn.Module):
-    def __init__(self,dino_dim,hidden_dim,dino_repo,dino_weights):
+    def __init__(self,dino_dim,hidden_dim,dino_repo,dino_weights,unfreeze_last_n_layers=0):
         super().__init__()
-        self.dino=DINOv2Encoder(repo=dino_repo,weights=dino_weights)
+        self.dino=DINOv2Encoder(repo=dino_repo,weights=dino_weights,unfreeze_last_n_layers=unfreeze_last_n_layers)
         self.agent_proj=nn.Sequential(
             nn.LayerNorm(dino_dim),
             nn.Linear(in_features=dino_dim,out_features=hidden_dim,bias=True),
@@ -222,6 +222,7 @@ class ActionDiT(nn.Module):
         learn_sigma=True,
         dino_repo="facebookresearch/dinov2",
         dino_weights=None,
+        dino_unfreeze_layers=0,
         qwen_model_path="Qwen/Qwen3-Embedding-0.6B",
         qwen_dtype=torch.bfloat16,
     ):
@@ -236,7 +237,7 @@ class ActionDiT(nn.Module):
         self.t_embedder=TimestepEmbedder(time_dim,hidden_dim)
         self.s_embedder=StateEmbedder(state_dim,hidden_dim)
         self.o_embedder=ObservationEmbedder(
-            dino_dim,hidden_dim,dino_repo,dino_weights
+            dino_dim,hidden_dim,dino_repo,dino_weights,dino_unfreeze_layers
         )
         self.camera_embeddings=nn.Parameter(torch.zeros(1,2,1,hidden_dim))
         nn.init.normal_(self.camera_embeddings,mean=0.0,std=0.02)

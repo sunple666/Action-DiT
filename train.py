@@ -138,6 +138,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--qwen_model_path", default=_default_qwen_model_path())
     parser.add_argument("--dino_repo", default=_default_dino_repo())
     parser.add_argument("--dino_weights", default=_default_dino_weights())
+    parser.add_argument("--dino_unfreeze_layers", type=int, default=2)
 
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument(
@@ -509,6 +510,7 @@ def main(args: argparse.Namespace) -> None:
         learn_sigma=LEARN_SIGMA,
         dino_repo=args.dino_repo,
         dino_weights=args.dino_weights,
+        dino_unfreeze_layers=args.dino_unfreeze_layers,
         qwen_model_path=args.qwen_model_path,
         qwen_dtype=qwen_dtype,
         use_cross_attention=True,
