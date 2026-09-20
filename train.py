@@ -138,7 +138,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--qwen_model_path", default=_default_qwen_model_path())
     parser.add_argument("--dino_repo", default=_default_dino_repo())
     parser.add_argument("--dino_weights", default=_default_dino_weights())
-    parser.add_argument("--dino_unfreeze_layers", type=int, default=2)
+    parser.add_argument("--dino_unfreeze_layers", type=int, default=0)
 
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument(

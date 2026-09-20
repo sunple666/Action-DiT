@@ -7,10 +7,11 @@ import torch.nn as nn
 class DINOv2Encoder(nn.Module):
     """Frozen DINOv2 ViT-S/14 encoder loaded from Hub or a local clone."""
 
-    def __init__(self, repo: str = "facebookresearch/dinov2", weights: str | None = None, unfreeze_last_n_layers = 0):
+    def __init__(self, repo: str = "facebookresearch/dinov2", weights: str | None = None, unfreeze_last_n_layers = 0, intermediate_layers = (5, 8, 11)):
         super().__init__()
 
         self.unfreeze_last_n_layers = unfreeze_last_n_layers
+        self.intermediate_layers = tuple(intermediate_layers)
 
         is_local = Path(repo).expanduser().is_dir()
         load_kwargs = {
@@ -61,4 +62,20 @@ class DINOv2Encoder(nn.Module):
         with torch.no_grad():
             features=self.dino.forward_features(images)
             return features["x_norm_patchtokens"]
+
+    def forward_intermediate_patch_tokens(self,images):
+        def extract():
+            outputs=self.dino.get_intermediate_layers(
+                images,
+                n=self.intermediate_layers,
+                reshape=False,
+                return_class_token=False,
+                norm=True,
+            )
+            return torch.stack(outputs,dim=1)
+        if self.unfreeze_last_n_layers > 0:
+            return extract()
+        with torch.no_grad():
+            return extract()
+        
 
