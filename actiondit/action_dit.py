@@ -63,35 +63,31 @@ class ObservationEmbedder(nn.Module):
         super().__init__()
         self.dino=DINOv2Encoder(repo=dino_repo,weights=dino_weights,unfreeze_last_n_layers=unfreeze_last_n_layers)
         self.agent_proj=nn.Sequential(
-            nn.LayerNorm(dino_dim),
-            nn.Linear(in_features=dino_dim,out_features=hidden_dim,bias=True),
+            nn.LayerNorm(dino_dim*3),
+            nn.Linear(in_features=dino_dim*3,out_features=hidden_dim,bias=True),
             nn.GELU(),
             nn.Linear(in_features=hidden_dim,out_features=hidden_dim,bias=True),
             nn.LayerNorm(hidden_dim)
         )
         self.wrist_proj=nn.Sequential(
-            nn.LayerNorm(dino_dim),
-            nn.Linear(in_features=dino_dim,out_features=hidden_dim,bias=True),
+            nn.LayerNorm(dino_dim*3),
+            nn.Linear(in_features=dino_dim*3,out_features=hidden_dim,bias=True),
             nn.GELU(),
             nn.Linear(in_features=hidden_dim,out_features=hidden_dim,bias=True),
             nn.LayerNorm(hidden_dim)
         )
-        self.agent_gate=nn.Parameter(torch.zeros(2))
-        self.wrist_gate=nn.Parameter(torch.zeros(2))
 
-    def _fuse(self,x,projection,gate):
-        x=projection(x)#[B,3,256,384]->[B,3,256,D]
-        final_layer=x[:,-1]#[B,256.D]
-        middle_layers=x[:,:-1]#[B,2,256,D]
-        gate=torch.tanh(gate).view(1,-1,1,1)
-        fused=final_layer+(middle_layers*gate).mean(dim=1)#[B,256,D]
-        return fused
+    def _fuse(self,x,projection):
+        batch_size,dino_layers,patches,dino_dim=x.shape
+        x=x.permute(0,2,1,3).reshape(batch_size,patches,dino_layers*dino_dim)#[B,3,256,384]->[B,256,3*384]
+        x=projection(x)#[B,256,3*384]->[B,256,D]
+        return x
     
     def forward(self,x):
         x=self.dino.forward_intermediate_patch_tokens(x)#[2B,3,224,224]->[2B,3,256,384]
         agent_embeddings, wrist_embeddings=torch.chunk(x,2,dim=0)#[B,3,256,384],[B,3,256,384]
-        agent_embeddings=self._fuse(agent_embeddings,self.agent_proj,self.agent_gate)#[B,3,256,384]->[B,256,D]
-        wrist_embeddings=self._fuse(wrist_embeddings,self.wrist_proj,self.wrist_gate)#[B,3,256,384]->[B,256,D]
+        agent_embeddings=self._fuse(agent_embeddings,self.agent_proj)#[B,3,256,384]->[B,256,D]
+        wrist_embeddings=self._fuse(wrist_embeddings,self.wrist_proj)#[B,3,256,384]->[B,256,D]
         
         x=torch.cat([agent_embeddings,wrist_embeddings],dim=0)#[2B,256,D]
         return x
